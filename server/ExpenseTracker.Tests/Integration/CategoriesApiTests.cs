@@ -28,7 +28,8 @@ public class CategoriesApiTests(ApiFactory factory) : IClassFixture<ApiFactory>
     public async Task Can_add_a_custom_category()
     {
         var client = ClientFor(9002);
-        await client.PostAsJsonAsync("/api/categories", new CategoryInput("Coffee", "☕"));
+        var postResp = await client.PostAsJsonAsync("/api/categories", new CategoryInput("Coffee", "☕"));
+        postResp.StatusCode.Should().Be(System.Net.HttpStatusCode.Created);
         var list = await client.GetFromJsonAsync<List<CategoryDto>>("/api/categories");
         list!.Should().Contain(c => c.Name == "Coffee" && c.Emoji == "☕");
     }

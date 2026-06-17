@@ -34,6 +34,7 @@ public static class CategoryEndpoints
 
         g.MapPut("/{id:int}", async (ICurrentUser cu, AppDbContext db, int id, CategoryInput input) =>
         {
+            if (string.IsNullOrWhiteSpace(input.Name)) return Results.BadRequest("Name required.");
             var user = await cu.GetOrCreateAsync();
             var c = await db.Categories.FirstOrDefaultAsync(x => x.Id == id && x.UserId == user.Id);
             if (c is null) return Results.NotFound();

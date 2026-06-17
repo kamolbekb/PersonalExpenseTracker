@@ -20,6 +20,7 @@ function Layout() {
 			<nav className="tabbar">
 				<NavLink to="/">Add</NavLink>
 				<NavLink to="/expenses">List</NavLink>
+				<NavLink to="/categories">🏷️</NavLink>
 				<NavLink to="/reports">Reports</NavLink>
 				<NavLink to="/budgets">Budgets</NavLink>
 				<NavLink to="/settings">⚙</NavLink>

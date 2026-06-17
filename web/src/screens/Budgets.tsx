@@ -6,15 +6,14 @@ import {
 	useSettings,
 	useUpsertBudget,
 } from "../api/hooks";
+import { localDateString } from "../lib/date";
 
 const monthRange = () => {
 	const now = new Date();
-	const from = new Date(now.getFullYear(), now.getMonth(), 1)
-		.toISOString()
-		.slice(0, 10);
-	const to = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-		.toISOString()
-		.slice(0, 10);
+	const from = localDateString(new Date(now.getFullYear(), now.getMonth(), 1));
+	const to = localDateString(
+		new Date(now.getFullYear(), now.getMonth() + 1, 0),
+	);
 	return { from, to };
 };
 

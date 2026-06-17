@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useCategories, useCreateExpense, useSettings } from "../api/hooks";
+import { localDateString } from "../lib/date";
 
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => localDateString(new Date());
 
 export default function AddExpense() {
 	const { data: categories } = useCategories();

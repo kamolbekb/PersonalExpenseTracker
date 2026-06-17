@@ -26,5 +26,9 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.MigrateAsync();
     }
 
-    public new async Task DisposeAsync() => await _db.DisposeAsync();
+    public new async Task DisposeAsync()
+    {
+        await _db.DisposeAsync();
+        await base.DisposeAsync();
+    }
 }

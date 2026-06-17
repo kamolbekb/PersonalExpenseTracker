@@ -34,4 +34,13 @@ public class AuthTests(ApiFactory factory) : IClassFixture<ApiFactory>
         var user = await db.Users.SingleAsync(u => u.TelegramUserId == 7001);
         (await db.Categories.CountAsync(c => c.UserId == user.Id)).Should().Be(DefaultCategories.All.Count);
     }
+
+    [Fact]
+    public async Task Invalid_initData_returns_401()
+    {
+        var client = factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("tma", "bogus-not-signed");
+        var res = await client.GetAsync("/api/categories");
+        res.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
 }

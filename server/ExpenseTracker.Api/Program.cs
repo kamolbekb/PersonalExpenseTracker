@@ -1,4 +1,5 @@
 using ExpenseTracker.Api.Auth;
+using ExpenseTracker.Api.Currency;
 using ExpenseTracker.Api.Data;
 using ExpenseTracker.Api.Features.Categories;
 using ExpenseTracker.Api.Features.Expenses;
@@ -20,6 +21,11 @@ builder.Services.AddScoped<ICurrentUser, CurrentUserAccessor>();
 builder.Services.AddAuthentication(TelegramAuthHandler.Scheme)
     .AddScheme<AuthenticationSchemeOptions, TelegramAuthHandler>(TelegramAuthHandler.Scheme, _ => { });
 builder.Services.AddAuthorization();
+
+builder.Services.AddSingleton<CurrencyConverter>();
+builder.Services.AddHttpClient<IExchangeRateProvider, FrankfurterRateProvider>(c =>
+    c.BaseAddress = new Uri("https://api.frankfurter.app/"));
+builder.Services.AddScoped<ExchangeRateService>();
 
 var app = builder.Build();
 

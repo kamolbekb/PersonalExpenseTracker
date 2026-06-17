@@ -138,9 +138,12 @@ current user). All reads/writes are implicitly scoped to that user.
 - The user picks a **base currency** in settings (default e.g. USD).
 - Each expense keeps its **original currency** — the real amount spent is never
   lost or rewritten.
-- A **daily job** (and/or lazy fetch-on-demand) pulls rates from Frankfurter and
-  caches them in `ExchangeRate`, so reports work even if the API is briefly down
-  and we don't hammer it.
+- Rates are pulled from Frankfurter **lazily, on demand**: when a report or
+  conversion needs a currency/date that isn't cached, the backend fetches it
+  once and stores it in `ExchangeRate`. This avoids a background scheduler
+  (simpler on a PaaS) while still caching so we don't hammer the API and reports
+  keep working if it's briefly down. (A scheduled prefetch can be added later if
+  needed.)
 - **Reports convert** each expense to the base currency using the rate **as of
   the expense's date** (historical accuracy), not today's rate. Budgets compare
   in base currency too.

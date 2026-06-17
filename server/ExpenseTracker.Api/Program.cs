@@ -3,8 +3,11 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<AppDbContext>(o =>
-    o.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
+var connectionString = builder.Configuration.GetConnectionString("Default");
+if (string.IsNullOrWhiteSpace(connectionString))
+    throw new InvalidOperationException(
+        "ConnectionStrings:Default is not configured. Set the ConnectionStrings__Default environment variable.");
+builder.Services.AddDbContext<AppDbContext>(o => o.UseNpgsql(connectionString));
 
 var app = builder.Build();
 

@@ -40,6 +40,9 @@ using (var scope = app.Services.CreateScope())
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
 app.MapGet("/healthz", () => Results.Text("ok"));
 
 var api = app.MapGroup("/api").RequireAuthorization();
@@ -49,6 +52,8 @@ api.MapExpenseEndpoints();
 api.MapReportEndpoints();
 api.MapBudgetEndpoints();
 api.MapSettingEndpoints();
+
+app.MapFallbackToFile("index.html");
 
 app.Run();
 

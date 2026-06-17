@@ -28,7 +28,7 @@ public class TelegramInitDataValidatorTests
     public void Tampered_hash_returns_false()
     {
         var initData = InitDataBuilder.Build(42, BotToken, _now.AddMinutes(-1));
-        var tampered = initData[..^4] + "0000";
+        var tampered = initData[..(initData.IndexOf("hash=") + 5)] + new string('0', 64);
 
         _sut.TryValidate(tampered, BotToken, _now, out _).Should().BeFalse();
     }
@@ -54,5 +54,45 @@ public class TelegramInitDataValidatorTests
     {
         _sut.TryValidate("user=%7B%22id%22%3A1%7D&auth_date=1", BotToken, _now, out _)
             .Should().BeFalse();
+    }
+
+    [Fact]
+    public void Missing_user_returns_false()
+    {
+        var initData = $"auth_date={_now.ToUnixTimeSeconds()}&hash=abc123";
+        _sut.TryValidate(initData, BotToken, _now, out _).Should().BeFalse();
+    }
+
+    [Fact]
+    public void Missing_auth_date_returns_false()
+    {
+        var initData = "user=%7B%22id%22%3A1%7D&hash=abc123";
+        _sut.TryValidate(initData, BotToken, _now, out _).Should().BeFalse();
+    }
+
+    [Fact]
+    public void Malformed_user_json_returns_false()
+    {
+        // Correctly signed, but the user value is not valid JSON: must return false, not throw.
+        var initData = InitDataBuilder.BuildWithRawUser("notjson", BotToken, _now.AddMinutes(-1));
+        _sut.TryValidate(initData, BotToken, _now, out _).Should().BeFalse();
+    }
+
+    [Fact]
+    public void User_without_id_returns_false()
+    {
+        var initData = InitDataBuilder.BuildWithRawUser("{\"first_name\":\"x\"}", BotToken, _now.AddMinutes(-1));
+        _sut.TryValidate(initData, BotToken, _now, out _).Should().BeFalse();
+    }
+
+    [Fact]
+    public void User_with_only_id_validates_with_null_names()
+    {
+        var initData = InitDataBuilder.Build(99, BotToken, _now.AddMinutes(-1), firstName: null, username: null);
+        var ok = _sut.TryValidate(initData, BotToken, _now, out var user);
+        ok.Should().BeTrue();
+        user.Id.Should().Be(99);
+        user.FirstName.Should().BeNull();
+        user.Username.Should().BeNull();
     }
 }

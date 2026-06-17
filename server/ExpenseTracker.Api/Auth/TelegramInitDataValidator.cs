@@ -42,12 +42,19 @@ public class TelegramInitDataValidator
                 Encoding.UTF8.GetBytes(computed),
                 Encoding.UTF8.GetBytes(providedHash.ToLowerInvariant()))) return false;
 
-        using var doc = JsonDocument.Parse(userJson);
-        var root = doc.RootElement;
-        user = new TelegramUser(
-            root.GetProperty("id").GetInt64(),
-            root.TryGetProperty("first_name", out var f) ? f.GetString() : null,
-            root.TryGetProperty("username", out var u) ? u.GetString() : null);
-        return true;
+        try
+        {
+            using var doc = JsonDocument.Parse(userJson);
+            var root = doc.RootElement;
+            user = new TelegramUser(
+                root.GetProperty("id").GetInt64(),
+                root.TryGetProperty("first_name", out var f) ? f.GetString() : null,
+                root.TryGetProperty("username", out var u) ? u.GetString() : null);
+            return true;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
     }
 }

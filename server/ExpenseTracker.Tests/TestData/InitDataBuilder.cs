@@ -10,10 +10,14 @@ public static class InitDataBuilder
     public static string Build(long userId, string botToken, DateTimeOffset authDate,
         string? firstName = "Test", string? username = "tester")
     {
-        var userJson = JsonSerializer.Serialize(new
-        {
-            id = userId, first_name = firstName, username
-        });
+        var payload = new Dictionary<string, object> { ["id"] = userId };
+        if (firstName is not null) payload["first_name"] = firstName;
+        if (username is not null) payload["username"] = username;
+        return BuildWithRawUser(JsonSerializer.Serialize(payload), botToken, authDate);
+    }
+
+    public static string BuildWithRawUser(string userJson, string botToken, DateTimeOffset authDate)
+    {
         var fields = new SortedDictionary<string, string>
         {
             ["auth_date"] = authDate.ToUnixTimeSeconds().ToString(),

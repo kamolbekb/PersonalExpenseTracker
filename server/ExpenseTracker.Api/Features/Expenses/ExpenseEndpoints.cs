@@ -49,6 +49,9 @@ public static class ExpenseEndpoints
             var user = await cu.GetOrCreateAsync();
             var e = await db.Expenses.FirstOrDefaultAsync(x => x.Id == id && x.UserId == user.Id);
             if (e is null) return Results.NotFound();
+            if (input.Amount <= 0) return Results.BadRequest("Amount must be positive.");
+            var ownsCategory = await db.Categories.AnyAsync(c => c.Id == input.CategoryId && c.UserId == user.Id);
+            if (!ownsCategory) return Results.BadRequest("Unknown category.");
             e.Amount = input.Amount;
             e.CurrencyCode = input.CurrencyCode.ToUpperInvariant();
             e.CategoryId = input.CategoryId;

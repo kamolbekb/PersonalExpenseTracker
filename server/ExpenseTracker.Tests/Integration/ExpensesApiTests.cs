@@ -68,4 +68,20 @@ public class ExpensesApiTests(ApiFactory factory) : IClassFixture<ApiFactory>
         var res = await bob.DeleteAsync($"/api/expenses/{created!.Id}");
         res.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
+
+    [Fact]
+    public async Task User_cannot_update_another_users_expense()
+    {
+        var alice = ClientFor(8301);
+        var catId = await FirstCategoryId(8301);
+        var created = await (await alice.PostAsJsonAsync("/api/expenses",
+            new ExpenseInput(5m, "USD", catId, new DateOnly(2026, 6, 1), "x")))
+            .Content.ReadFromJsonAsync<ExpenseDto>();
+
+        var bob = ClientFor(8302);
+        var bobCatId = await FirstCategoryId(8302);
+        var res = await bob.PutAsJsonAsync($"/api/expenses/{created!.Id}",
+            new ExpenseInput(9m, "USD", bobCatId, new DateOnly(2026, 6, 2), "hijack"));
+        res.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
 }

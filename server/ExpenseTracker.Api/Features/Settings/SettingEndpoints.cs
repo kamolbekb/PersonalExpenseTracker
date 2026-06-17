@@ -20,6 +20,7 @@ public static class SettingEndpoints
         g.MapPut("", async (ICurrentUser cu, AppDbContext db, SettingDto input) =>
         {
             var user = await cu.GetOrCreateAsync();
+            if (string.IsNullOrWhiteSpace(input.BaseCurrency)) return Results.BadRequest("Base currency required.");
             var s = await db.Settings.FirstAsync(x => x.UserId == user.Id);
             s.BaseCurrency = input.BaseCurrency.ToUpperInvariant();
             await db.SaveChangesAsync();

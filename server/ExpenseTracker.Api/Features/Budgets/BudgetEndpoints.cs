@@ -23,6 +23,12 @@ public static class BudgetEndpoints
         {
             var user = await cu.GetOrCreateAsync();
             if (input.LimitAmount <= 0) return Results.BadRequest("Limit must be positive.");
+            if (string.IsNullOrWhiteSpace(input.CurrencyCode)) return Results.BadRequest("Currency required.");
+            if (input.CategoryId is not null)
+            {
+                var ownsCategory = await db.Categories.AnyAsync(c => c.Id == input.CategoryId && c.UserId == user.Id);
+                if (!ownsCategory) return Results.BadRequest("Unknown category.");
+            }
             var existing = await db.Budgets.FirstOrDefaultAsync(b =>
                 b.UserId == user.Id && b.CategoryId == input.CategoryId);
             if (existing is null)

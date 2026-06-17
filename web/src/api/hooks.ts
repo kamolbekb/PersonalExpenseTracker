@@ -95,3 +95,15 @@ export const useUpdateSettings = () => {
 		},
 	});
 };
+
+export const useDeleteExpense = () => {
+	const qc = useQueryClient();
+	return useMutation({
+		mutationFn: (id: number) =>
+			api<void>(`/expenses/${id}`, { method: "DELETE" }),
+		onSuccess: () => {
+			qc.invalidateQueries({ queryKey: ["expenses"] });
+			qc.invalidateQueries({ queryKey: ["report"] });
+		},
+	});
+};

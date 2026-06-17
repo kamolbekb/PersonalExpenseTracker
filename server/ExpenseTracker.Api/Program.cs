@@ -1,5 +1,6 @@
 using ExpenseTracker.Api.Auth;
 using ExpenseTracker.Api.Data;
+using ExpenseTracker.Api.Features.Expenses;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
 
@@ -33,6 +34,8 @@ api.MapGet("/categories", async (ICurrentUser cu, AppDbContext db) =>
     var user = await cu.GetOrCreateAsync();
     return Results.Ok(await db.Categories.Where(c => c.UserId == user.Id).ToListAsync());
 });
+
+api.MapExpenseEndpoints();
 
 app.Run();
 

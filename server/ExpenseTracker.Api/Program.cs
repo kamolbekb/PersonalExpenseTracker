@@ -3,6 +3,7 @@ using ExpenseTracker.Api.Currency;
 using ExpenseTracker.Api.Data;
 using ExpenseTracker.Api.Features.Categories;
 using ExpenseTracker.Api.Features.Expenses;
+using ExpenseTracker.Api.Features.Reports;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
 
@@ -38,6 +39,7 @@ var api = app.MapGroup("/api").RequireAuthorization();
 
 api.MapCategoryEndpoints();
 api.MapExpenseEndpoints();
+api.MapReportEndpoints();
 
 app.Run();
 

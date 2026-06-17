@@ -7,7 +7,7 @@ namespace ExpenseTracker.Api.Auth;
 
 public class TelegramAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
-    public const string Scheme = "tma";
+    public const string SchemeName = "tma";
     readonly TelegramInitDataValidator _validator;
     readonly BotOptions _bot;
 
@@ -23,17 +23,17 @@ public class TelegramAuthHandler : AuthenticationHandler<AuthenticationSchemeOpt
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
         var header = Request.Headers.Authorization.ToString();
-        if (!header.StartsWith($"{Scheme} ", StringComparison.OrdinalIgnoreCase))
+        if (!header.StartsWith($"{SchemeName} ", StringComparison.OrdinalIgnoreCase))
             return Task.FromResult(AuthenticateResult.NoResult());
 
-        var initData = header[(Scheme.Length + 1)..];
+        var initData = header[(SchemeName.Length + 1)..];
         if (!_validator.TryValidate(initData, _bot.Token, DateTimeOffset.UtcNow, out var tgUser))
             return Task.FromResult(AuthenticateResult.Fail("Invalid initData"));
 
         var claims = new List<Claim> { new("tg_id", tgUser.Id.ToString()) };
         if (tgUser.FirstName is not null) claims.Add(new(ClaimTypes.GivenName, tgUser.FirstName));
         if (tgUser.Username is not null) claims.Add(new("tg_username", tgUser.Username));
-        var principal = new ClaimsPrincipal(new ClaimsIdentity(claims, Scheme));
-        return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(principal, Scheme)));
+        var principal = new ClaimsPrincipal(new ClaimsIdentity(claims, SchemeName));
+        return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(principal, SchemeName)));
     }
 }

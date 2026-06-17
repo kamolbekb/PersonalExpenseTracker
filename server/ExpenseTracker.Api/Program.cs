@@ -18,8 +18,8 @@ builder.Services.Configure<BotOptions>(o => o.Token = builder.Configuration["Bot
 builder.Services.AddSingleton<TelegramInitDataValidator>();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ICurrentUser, CurrentUserAccessor>();
-builder.Services.AddAuthentication(TelegramAuthHandler.Scheme)
-    .AddScheme<AuthenticationSchemeOptions, TelegramAuthHandler>(TelegramAuthHandler.Scheme, _ => { });
+builder.Services.AddAuthentication(TelegramAuthHandler.SchemeName)
+    .AddScheme<AuthenticationSchemeOptions, TelegramAuthHandler>(TelegramAuthHandler.SchemeName, _ => { });
 builder.Services.AddAuthorization();
 
 builder.Services.AddSingleton<CurrencyConverter>();

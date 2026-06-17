@@ -1,5 +1,6 @@
 using ExpenseTracker.Api.Auth;
 using ExpenseTracker.Api.Data;
+using ExpenseTracker.Api.Features.Categories;
 using ExpenseTracker.Api.Features.Expenses;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
@@ -28,13 +29,8 @@ app.UseAuthorization();
 app.MapGet("/healthz", () => Results.Text("ok"));
 
 var api = app.MapGroup("/api").RequireAuthorization();
-// Placeholder so the auth test has a route; replaced in Task 5+.
-api.MapGet("/categories", async (ICurrentUser cu, AppDbContext db) =>
-{
-    var user = await cu.GetOrCreateAsync();
-    return Results.Ok(await db.Categories.Where(c => c.UserId == user.Id).ToListAsync());
-});
 
+api.MapCategoryEndpoints();
 api.MapExpenseEndpoints();
 
 app.Run();

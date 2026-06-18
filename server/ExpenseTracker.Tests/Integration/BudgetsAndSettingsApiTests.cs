@@ -19,7 +19,7 @@ public class BudgetsAndSettingsApiTests(ApiFactory factory) : IClassFixture<ApiF
     }
 
     [Fact]
-    public async Task Settings_default_is_usd_and_can_be_changed()
+    public async Task Settings_default_is_uzs_and_can_be_changed()
     {
         var client = ClientFor(12001);
         var initial = await client.GetFromJsonAsync<SettingDto>("/api/settings");

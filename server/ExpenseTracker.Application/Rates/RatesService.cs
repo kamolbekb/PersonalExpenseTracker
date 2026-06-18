@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ExpenseTracker.Application.Rates;
 
-public class RatesService(IApplicationDbContext db, IEnumerable<IRateSource> sources) : ICbuRates
+public class RatesService(IApplicationDbContext db, IEnumerable<IRateSource> sources, IClock clock) : ICbuRates
 {
     public async Task EnsureSourceForDateAsync(string sourceCode, DateOnly date, CancellationToken ct = default)
     {
@@ -38,8 +38,11 @@ public class RatesService(IApplicationDbContext db, IEnumerable<IRateSource> sou
 
     public async Task<RatesView> GetRatesAsync(DateOnly? date, IReadOnlyList<string> currencies, CancellationToken ct = default)
     {
-        var d = date ?? DateOnly.FromDateTime(DateTime.UtcNow);
-        await EnsureAllSourcesForDateAsync(d, ct);
+        var requested = date ?? clock.TodayInTashkent();
+        await EnsureAllSourcesForDateAsync(requested, ct);
+        // fall back to the latest stored date <= requested (CBU may not have published `requested` yet)
+        var d = await db.CurrencyRates.Where(r => r.AsOfDate <= requested)
+            .MaxAsync(r => (DateOnly?)r.AsOfDate, ct) ?? requested;
         var wanted = currencies.Select(c => c.ToUpperInvariant()).ToHashSet();
         var rows = await db.CurrencyRates
             .Where(r => r.AsOfDate == d && wanted.Contains(r.CurrencyCode))

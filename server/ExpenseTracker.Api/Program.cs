@@ -15,8 +15,11 @@ builder.Services.Configure<BotOptions>(o => o.Token = builder.Configuration["Bot
 builder.Services.AddAuthentication(TelegramAuthHandler.SchemeName)
     .AddScheme<AuthenticationSchemeOptions, TelegramAuthHandler>(TelegramAuthHandler.SchemeName, _ => { });
 builder.Services.AddAuthorization();
+builder.Services.AddProblemDetails();
 
 var app = builder.Build();
+
+app.UseExceptionHandler();
 
 using (var scope = app.Services.CreateScope())
 {

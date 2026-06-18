@@ -1,5 +1,6 @@
-using ExpenseTracker.Api.Auth;
 using ExpenseTracker.Api.Data;
+using ExpenseTracker.Application.Common.Interfaces;
+using ExpenseTracker.Application.Expenses;
 using ExpenseTracker.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 

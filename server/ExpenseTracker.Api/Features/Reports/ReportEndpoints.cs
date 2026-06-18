@@ -1,6 +1,8 @@
-using ExpenseTracker.Api.Auth;
 using ExpenseTracker.Api.Currency;
 using ExpenseTracker.Api.Data;
+using ExpenseTracker.Application.Common;
+using ExpenseTracker.Application.Common.Interfaces;
+using ExpenseTracker.Application.Reports;
 using Microsoft.EntityFrameworkCore;
 
 namespace ExpenseTracker.Api.Features.Reports;

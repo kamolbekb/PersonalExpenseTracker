@@ -1,4 +1,4 @@
-namespace ExpenseTracker.Api.Features.Reports;
+namespace ExpenseTracker.Application.Reports;
 
 public record CategoryTotal(int CategoryId, string CategoryName, decimal Total);
 public record MonthTotal(string Month, decimal Total);

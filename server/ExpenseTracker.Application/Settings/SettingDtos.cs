@@ -1,3 +1,3 @@
-namespace ExpenseTracker.Api.Features.Settings;
+namespace ExpenseTracker.Application.Settings;
 
 public record SettingDto(string BaseCurrency);

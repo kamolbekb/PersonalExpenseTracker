@@ -6,6 +6,8 @@ using ExpenseTracker.Api.Features.Categories;
 using ExpenseTracker.Api.Features.Expenses;
 using ExpenseTracker.Api.Features.Reports;
 using ExpenseTracker.Api.Features.Settings;
+using ExpenseTracker.Application.Common;
+using ExpenseTracker.Application.Common.Interfaces;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,6 +18,7 @@ if (string.IsNullOrWhiteSpace(connectionString))
     throw new InvalidOperationException(
         "ConnectionStrings:Default is not configured. Set the ConnectionStrings__Default environment variable.");
 builder.Services.AddDbContext<AppDbContext>(o => o.UseNpgsql(connectionString));
+builder.Services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<AppDbContext>());
 
 builder.Services.Configure<BotOptions>(o => o.Token = builder.Configuration["BotToken"] ?? "");
 builder.Services.AddSingleton<TelegramInitDataValidator>();

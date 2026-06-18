@@ -1,7 +1,7 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using ExpenseTracker.Api.Features.Budgets;
-using ExpenseTracker.Api.Features.Settings;
+using ExpenseTracker.Application.Budgets;
+using ExpenseTracker.Application.Settings;
 using ExpenseTracker.Tests.TestData;
 using FluentAssertions;
 using Xunit;

@@ -1,4 +1,4 @@
-namespace ExpenseTracker.Api.Currency;
+namespace ExpenseTracker.Application.Common;
 
 public class CurrencyConverter
 {

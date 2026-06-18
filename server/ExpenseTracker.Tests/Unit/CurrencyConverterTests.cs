@@ -1,4 +1,4 @@
-using ExpenseTracker.Api.Currency;
+using ExpenseTracker.Application.Common;
 using FluentAssertions;
 using Xunit;
 

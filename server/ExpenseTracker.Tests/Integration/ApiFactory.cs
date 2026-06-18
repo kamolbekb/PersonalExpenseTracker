@@ -1,4 +1,4 @@
-using ExpenseTracker.Api.Data;
+using ExpenseTracker.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
@@ -23,7 +23,7 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
     {
         await _db.StartAsync();
         using var scope = Services.CreateScope();
-        await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.MigrateAsync();
+        await scope.ServiceProvider.GetRequiredService<ApplicationDbContext>().Database.MigrateAsync();
     }
 
     public new async Task DisposeAsync()

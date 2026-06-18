@@ -1,6 +1,6 @@
 using System.Net;
 using System.Net.Http.Headers;
-using ExpenseTracker.Api.Data;
+using ExpenseTracker.Infrastructure.Persistence;
 using ExpenseTracker.Domain;
 using ExpenseTracker.Tests.TestData;
 using FluentAssertions;
@@ -31,7 +31,7 @@ public class AuthTests(ApiFactory factory) : IClassFixture<ApiFactory>
 
         res.StatusCode.Should().Be(HttpStatusCode.OK);
         using var scope = factory.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         var user = await db.Users.SingleAsync(u => u.TelegramUserId == 7001);
         (await db.Categories.CountAsync(c => c.UserId == user.Id)).Should().Be(DefaultCategories.All.Count);
     }

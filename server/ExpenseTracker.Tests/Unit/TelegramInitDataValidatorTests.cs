@@ -1,4 +1,4 @@
-using ExpenseTracker.Api.Auth;
+using ExpenseTracker.Infrastructure.Identity;
 using ExpenseTracker.Tests.TestData;
 using FluentAssertions;
 using Xunit;

@@ -1,8 +1,8 @@
+using ExpenseTracker.Application.Categories;
 using ExpenseTracker.Application.Common;
 using ExpenseTracker.Application.Common.Interfaces;
-using ExpenseTracker.Application.Categories;
 
-namespace ExpenseTracker.Api.Features.Categories;
+namespace ExpenseTracker.Api.Endpoints;
 
 public static class CategoryEndpoints
 {

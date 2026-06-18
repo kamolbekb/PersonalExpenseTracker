@@ -1,25 +1,18 @@
-using ExpenseTracker.Application.Budgets;
 using ExpenseTracker.Application.Common;
 using ExpenseTracker.Application.Common.Interfaces;
+using ExpenseTracker.Application.Reports;
 
-namespace ExpenseTracker.Api.Features.Budgets;
+namespace ExpenseTracker.Api.Endpoints;
 
-public static class BudgetEndpoints
+public static class ReportEndpoints
 {
-    public static IEndpointRouteBuilder MapBudgetEndpoints(this IEndpointRouteBuilder api)
+    public static IEndpointRouteBuilder MapReportEndpoints(this IEndpointRouteBuilder api)
     {
-        var g = api.MapGroup("/budgets");
-
-        g.MapGet("", async (ICurrentUser cu, BudgetService svc) =>
+        api.MapGet("/reports/summary", async (ICurrentUser cu, ReportService svc,
+            DateOnly? from, DateOnly? to) =>
         {
             var user = await cu.GetOrCreateAsync();
-            return Results.Ok(await svc.ListAsync(user.Id));
-        });
-
-        g.MapPut("", async (ICurrentUser cu, BudgetService svc, BudgetInput input) =>
-        {
-            var user = await cu.GetOrCreateAsync();
-            var result = await svc.UpsertAsync(user.Id, input);
+            var result = await svc.SummaryAsync(user.Id, from, to);
             return ToHttp(result);
         });
 

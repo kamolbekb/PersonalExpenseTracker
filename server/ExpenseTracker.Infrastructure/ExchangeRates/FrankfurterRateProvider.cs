@@ -1,7 +1,7 @@
 using System.Text.Json;
 using ExpenseTracker.Application.Common.Interfaces;
 
-namespace ExpenseTracker.Api.Currency;
+namespace ExpenseTracker.Infrastructure.ExchangeRates;
 
 public class FrankfurterRateProvider(HttpClient http) : IExchangeRateProvider
 {

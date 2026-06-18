@@ -2,7 +2,7 @@ using ExpenseTracker.Application.Common;
 using ExpenseTracker.Application.Common.Interfaces;
 using ExpenseTracker.Application.Expenses;
 
-namespace ExpenseTracker.Api.Features.Expenses;
+namespace ExpenseTracker.Api.Endpoints;
 
 public static class ExpenseEndpoints
 {

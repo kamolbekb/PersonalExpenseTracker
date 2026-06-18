@@ -26,7 +26,7 @@ public class UserProvisioningService(IUserContext userContext, IApplicationDbCon
 
         db.Categories.AddRange(DefaultCategories.All.Select(c =>
             new Category { UserId = user.Id, Name = c.Name, Emoji = c.Emoji }));
-        db.Settings.Add(new Setting { UserId = user.Id, BaseCurrency = "USD" });
+        db.Settings.Add(new Setting { UserId = user.Id, BaseCurrency = "UZS" });
         await db.SaveChangesAsync();
         return user;
     }

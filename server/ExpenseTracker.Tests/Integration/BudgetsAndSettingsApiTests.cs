@@ -23,7 +23,7 @@ public class BudgetsAndSettingsApiTests(ApiFactory factory) : IClassFixture<ApiF
     {
         var client = ClientFor(12001);
         var initial = await client.GetFromJsonAsync<SettingDto>("/api/settings");
-        initial!.BaseCurrency.Should().Be("USD");
+        initial!.BaseCurrency.Should().Be("UZS");
 
         await client.PutAsJsonAsync("/api/settings", new SettingDto("EUR"));
         var updated = await client.GetFromJsonAsync<SettingDto>("/api/settings");

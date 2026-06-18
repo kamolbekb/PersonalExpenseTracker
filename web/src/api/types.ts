@@ -56,3 +56,29 @@ export interface ReportSummary {
 export interface Settings {
 	baseCurrency: string;
 }
+
+export interface RateRow {
+	source: string;
+	currency: string;
+	ratePerUnit: number;
+	unitPerUzs: number;
+	buy: number | null;
+	sell: number | null;
+}
+
+export interface RatesView {
+	date: string;
+	rates: RateRow[];
+}
+
+export interface GoldRow {
+	item: string;
+	sellPrice: number | null;
+	buyBackPrice: number | null;
+}
+
+export interface GoldView {
+	date: string;
+	historyFrom: string | null;
+	items: GoldRow[];
+}

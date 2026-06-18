@@ -10,6 +10,7 @@ import Categories from "./screens/Categories";
 import Budgets from "./screens/Budgets";
 import Reports from "./screens/Reports";
 import Settings from "./screens/Settings";
+import Rates from "./screens/Rates";
 
 function Layout() {
 	return (
@@ -24,6 +25,7 @@ function Layout() {
 				<NavLink to="/reports">Reports</NavLink>
 				<NavLink to="/budgets">Budgets</NavLink>
 				<NavLink to="/settings">⚙</NavLink>
+				<NavLink to="/rates">💱</NavLink>
 			</nav>
 		</div>
 	);
@@ -40,6 +42,7 @@ const router = createBrowserRouter([
 			{ path: "budgets", element: <Budgets /> },
 			{ path: "reports", element: <Reports /> },
 			{ path: "settings", element: <Settings /> },
+			{ path: "rates", element: <Rates /> },
 		],
 	},
 ]);

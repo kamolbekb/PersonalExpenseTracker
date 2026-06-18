@@ -22,7 +22,7 @@ namespace ExpenseTracker.Api.Data.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("ExpenseTracker.Api.Domain.Budget", b =>
+            modelBuilder.Entity("ExpenseTracker.Domain.Entities.Budget", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -50,7 +50,7 @@ namespace ExpenseTracker.Api.Data.Migrations
                     b.ToTable("Budgets");
                 });
 
-            modelBuilder.Entity("ExpenseTracker.Api.Domain.Category", b =>
+            modelBuilder.Entity("ExpenseTracker.Domain.Entities.Category", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -79,7 +79,7 @@ namespace ExpenseTracker.Api.Data.Migrations
                     b.ToTable("Categories");
                 });
 
-            modelBuilder.Entity("ExpenseTracker.Api.Domain.ExchangeRate", b =>
+            modelBuilder.Entity("ExpenseTracker.Domain.Entities.ExchangeRate", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -109,7 +109,7 @@ namespace ExpenseTracker.Api.Data.Migrations
                     b.ToTable("ExchangeRates");
                 });
 
-            modelBuilder.Entity("ExpenseTracker.Api.Domain.Expense", b =>
+            modelBuilder.Entity("ExpenseTracker.Domain.Entities.Expense", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -146,7 +146,7 @@ namespace ExpenseTracker.Api.Data.Migrations
                     b.ToTable("Expenses");
                 });
 
-            modelBuilder.Entity("ExpenseTracker.Api.Domain.Setting", b =>
+            modelBuilder.Entity("ExpenseTracker.Domain.Entities.Setting", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -169,7 +169,7 @@ namespace ExpenseTracker.Api.Data.Migrations
                     b.ToTable("Settings");
                 });
 
-            modelBuilder.Entity("ExpenseTracker.Api.Domain.User", b =>
+            modelBuilder.Entity("ExpenseTracker.Domain.Entities.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()

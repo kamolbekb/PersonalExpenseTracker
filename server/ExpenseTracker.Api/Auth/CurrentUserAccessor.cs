@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using ExpenseTracker.Api.Data;
-using ExpenseTracker.Api.Domain;
+using ExpenseTracker.Domain;
+using ExpenseTracker.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace ExpenseTracker.Api.Auth;

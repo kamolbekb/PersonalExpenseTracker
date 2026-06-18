@@ -1,4 +1,4 @@
-namespace ExpenseTracker.Api.Data;
+namespace ExpenseTracker.Domain;
 
 public static class DefaultCategories
 {

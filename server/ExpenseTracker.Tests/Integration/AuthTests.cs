@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 using ExpenseTracker.Api.Data;
+using ExpenseTracker.Domain;
 using ExpenseTracker.Tests.TestData;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;

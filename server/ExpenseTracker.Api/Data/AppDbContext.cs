@@ -1,4 +1,4 @@
-using ExpenseTracker.Api.Domain;
+using ExpenseTracker.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace ExpenseTracker.Api.Data;

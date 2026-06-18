@@ -1,6 +1,6 @@
 using ExpenseTracker.Api.Auth;
 using ExpenseTracker.Api.Data;
-using ExpenseTracker.Api.Domain;
+using ExpenseTracker.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace ExpenseTracker.Api.Features.Budgets;

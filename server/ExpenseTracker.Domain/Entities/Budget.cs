@@ -1,4 +1,4 @@
-namespace ExpenseTracker.Api.Domain;
+namespace ExpenseTracker.Domain.Entities;
 
 public class Budget
 {

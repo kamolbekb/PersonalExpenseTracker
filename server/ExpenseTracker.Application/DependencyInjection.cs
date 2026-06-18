@@ -4,6 +4,7 @@ using ExpenseTracker.Application.Common;
 using ExpenseTracker.Application.Common.Interfaces;
 using ExpenseTracker.Application.ExchangeRates;
 using ExpenseTracker.Application.Expenses;
+using ExpenseTracker.Application.Gold;
 using ExpenseTracker.Application.Rates;
 using ExpenseTracker.Application.Reports;
 using ExpenseTracker.Application.Settings;
@@ -24,6 +25,7 @@ public static class DependencyInjection
         services.AddScoped<BudgetService>();
         services.AddScoped<ReportService>();
         services.AddScoped<SettingService>();
+        services.AddScoped<GoldService>();
         return services;
     }
 }

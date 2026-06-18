@@ -25,6 +25,8 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         {
             services.RemoveAll<IRateSource>();
             services.AddSingleton<IRateSource, StubRateSource>();
+            services.RemoveAll<IGoldSource>();
+            services.AddSingleton<IGoldSource, ExpenseTracker.Tests.TestData.StubGoldSource>();
         });
     }
 

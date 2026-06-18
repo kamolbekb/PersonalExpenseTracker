@@ -1,6 +1,7 @@
 using ExpenseTracker.Application.Common.Interfaces;
 using ExpenseTracker.Application.Users;
 using ExpenseTracker.Infrastructure.ExchangeRates;
+using ExpenseTracker.Infrastructure.Gold;
 using ExpenseTracker.Infrastructure.Identity;
 using ExpenseTracker.Infrastructure.Persistence;
 using ExpenseTracker.Infrastructure.Time;
@@ -26,6 +27,7 @@ public static class DependencyInjection
         services.AddSingleton<TelegramInitDataValidator>();
         services.AddSingleton<IClock, TashkentClock>();
         services.AddHttpClient<IRateSource, CbuRateProvider>(c => c.BaseAddress = new Uri("https://cbu.uz/"));
+        services.AddHttpClient<IGoldSource, CbuGoldScraper>(c => c.BaseAddress = new Uri("https://cbu.uz/"));
         return services;
     }
 }

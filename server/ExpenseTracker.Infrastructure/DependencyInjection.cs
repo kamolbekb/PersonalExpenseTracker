@@ -4,6 +4,7 @@ using ExpenseTracker.Infrastructure.ExchangeRates;
 using ExpenseTracker.Infrastructure.Gold;
 using ExpenseTracker.Infrastructure.Identity;
 using ExpenseTracker.Infrastructure.Persistence;
+using ExpenseTracker.Infrastructure.Scheduling;
 using ExpenseTracker.Infrastructure.Time;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -28,6 +29,7 @@ public static class DependencyInjection
         services.AddSingleton<IClock, TashkentClock>();
         services.AddHttpClient<IRateSource, CbuRateProvider>(c => c.BaseAddress = new Uri("https://cbu.uz/"));
         services.AddHttpClient<IGoldSource, CbuGoldScraper>(c => c.BaseAddress = new Uri("https://cbu.uz/"));
+        services.AddHostedService<DailyRateFetchService>();
         return services;
     }
 }

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Testcontainers.PostgreSql;
 using Xunit;
 
@@ -23,6 +24,7 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         builder.UseSetting("BotToken", BotToken);
         builder.ConfigureTestServices(services =>
         {
+            services.RemoveAll<IHostedService>();
             services.RemoveAll<IRateSource>();
             services.AddSingleton<IRateSource, StubRateSource>();
             services.RemoveAll<IGoldSource>();

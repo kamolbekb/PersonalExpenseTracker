@@ -43,7 +43,7 @@ app.MapPost("/internal/refresh", async (
 {
     var configured = config["Rates:RefreshToken"];
     var provided = request.Headers["X-Refresh-Token"].ToString();
-    if (string.IsNullOrEmpty(configured) ||
+    if (string.IsNullOrEmpty(configured) || string.IsNullOrEmpty(provided) ||
         !CryptographicOperations.FixedTimeEquals(
             Encoding.UTF8.GetBytes(provided), Encoding.UTF8.GetBytes(configured)))
     {

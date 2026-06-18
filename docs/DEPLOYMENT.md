@@ -47,6 +47,7 @@ gcloud run deploy expense-tracker \
   --set-env-vars 'Rates__RefreshToken=<long-random-secret>'
 ```
 - `--allow-unauthenticated` is correct: the app does its own auth (Telegram `initData` for `/api/*`, the refresh secret for `/internal/refresh`).
+- To keep the secret out of shell history, read it from a file instead: `--set-env-vars "Rates__RefreshToken=$(cat refresh-token.txt)"` (gitignore that file), or use Cloud Run's secret manager.
 - Note the service URL it prints (e.g. `https://expense-tracker-xxxx.run.app`). Confirm `…/healthz` returns `ok`. Migrations run automatically on startup.
 
 ### 3. Daily fetch — Cloud Scheduler (3 jobs free)

@@ -1,8 +1,6 @@
-using ExpenseTracker.Api.Data;
-using ExpenseTracker.Application.Categories;
+using ExpenseTracker.Application.Common;
 using ExpenseTracker.Application.Common.Interfaces;
-using ExpenseTracker.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
+using ExpenseTracker.Application.Categories;
 
 namespace ExpenseTracker.Api.Features.Categories;
 
@@ -12,39 +10,36 @@ public static class CategoryEndpoints
     {
         var g = api.MapGroup("/categories");
 
-        g.MapGet("", async (ICurrentUser cu, AppDbContext db) =>
+        g.MapGet("", async (ICurrentUser cu, CategoryService svc) =>
         {
             var user = await cu.GetOrCreateAsync();
-            return Results.Ok(await db.Categories
-                .Where(c => c.UserId == user.Id && !c.IsArchived)
-                .OrderBy(c => c.Name)
-                .Select(c => new CategoryDto(c.Id, c.Name, c.Emoji, c.IsArchived))
-                .ToListAsync());
+            return Results.Ok(await svc.ListAsync(user.Id));
         });
 
-        g.MapPost("", async (ICurrentUser cu, AppDbContext db, CategoryInput input) =>
+        g.MapPost("", async (ICurrentUser cu, CategoryService svc, CategoryInput input) =>
         {
             var user = await cu.GetOrCreateAsync();
-            if (string.IsNullOrWhiteSpace(input.Name)) return Results.BadRequest("Name required.");
-            var c = new Category { UserId = user.Id, Name = input.Name.Trim(), Emoji = input.Emoji };
-            db.Categories.Add(c);
-            await db.SaveChangesAsync();
-            return Results.Created($"/api/categories/{c.Id}",
-                new CategoryDto(c.Id, c.Name, c.Emoji, c.IsArchived));
+            var result = await svc.CreateAsync(user.Id, input);
+            return ToHttp(result, result.Value is not null ? $"/api/categories/{result.Value.Id}" : null);
         });
 
-        g.MapPut("/{id:int}", async (ICurrentUser cu, AppDbContext db, int id, CategoryInput input) =>
+        g.MapPut("/{id:int}", async (ICurrentUser cu, CategoryService svc, int id, CategoryInput input) =>
         {
-            if (string.IsNullOrWhiteSpace(input.Name)) return Results.BadRequest("Name required.");
             var user = await cu.GetOrCreateAsync();
-            var c = await db.Categories.FirstOrDefaultAsync(x => x.Id == id && x.UserId == user.Id);
-            if (c is null) return Results.NotFound();
-            c.Name = input.Name.Trim();
-            c.Emoji = input.Emoji;
-            await db.SaveChangesAsync();
-            return Results.Ok(new CategoryDto(c.Id, c.Name, c.Emoji, c.IsArchived));
+            var result = await svc.UpdateAsync(user.Id, id, input);
+            return ToHttp(result);
         });
 
         return api;
     }
+
+    static IResult ToHttp<T>(OperationResult<T> r, string? createdAtPath = null) => r.Status switch
+    {
+        ResultStatus.Ok => Results.Ok(r.Value),
+        ResultStatus.Created => Results.Created(createdAtPath ?? "", r.Value),
+        ResultStatus.NoContent => Results.NoContent(),
+        ResultStatus.NotFound => Results.NotFound(),
+        ResultStatus.BadRequest => Results.BadRequest(r.Error),
+        _ => Results.StatusCode(500),
+    };
 }

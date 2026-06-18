@@ -6,8 +6,9 @@ using ExpenseTracker.Api.Features.Categories;
 using ExpenseTracker.Api.Features.Expenses;
 using ExpenseTracker.Api.Features.Reports;
 using ExpenseTracker.Api.Features.Settings;
-using ExpenseTracker.Application.Common;
+using ExpenseTracker.Application;
 using ExpenseTracker.Application.Common.Interfaces;
+using ExpenseTracker.Application.Users;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,18 +21,19 @@ if (string.IsNullOrWhiteSpace(connectionString))
 builder.Services.AddDbContext<AppDbContext>(o => o.UseNpgsql(connectionString));
 builder.Services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<AppDbContext>());
 
+builder.Services.AddApplication();
+
 builder.Services.Configure<BotOptions>(o => o.Token = builder.Configuration["BotToken"] ?? "");
 builder.Services.AddSingleton<TelegramInitDataValidator>();
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped<ICurrentUser, CurrentUserAccessor>();
+builder.Services.AddScoped<IUserContext, HttpContextUserContext>();
+builder.Services.AddScoped<ICurrentUser, UserProvisioningService>();
 builder.Services.AddAuthentication(TelegramAuthHandler.SchemeName)
     .AddScheme<AuthenticationSchemeOptions, TelegramAuthHandler>(TelegramAuthHandler.SchemeName, _ => { });
 builder.Services.AddAuthorization();
 
-builder.Services.AddSingleton<CurrencyConverter>();
 builder.Services.AddHttpClient<IExchangeRateProvider, FrankfurterRateProvider>(c =>
     c.BaseAddress = new Uri("https://api.frankfurter.app/"));
-builder.Services.AddScoped<ExchangeRateService>();
 
 var app = builder.Build();
 

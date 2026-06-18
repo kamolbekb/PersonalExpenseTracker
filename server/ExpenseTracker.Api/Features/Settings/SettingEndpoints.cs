@@ -1,7 +1,6 @@
-using ExpenseTracker.Api.Data;
+using ExpenseTracker.Application.Common;
 using ExpenseTracker.Application.Common.Interfaces;
 using ExpenseTracker.Application.Settings;
-using Microsoft.EntityFrameworkCore;
 
 namespace ExpenseTracker.Api.Features.Settings;
 
@@ -11,23 +10,30 @@ public static class SettingEndpoints
     {
         var g = api.MapGroup("/settings");
 
-        g.MapGet("", async (ICurrentUser cu, AppDbContext db) =>
+        g.MapGet("", async (ICurrentUser cu, SettingService svc) =>
         {
             var user = await cu.GetOrCreateAsync();
-            var s = await db.Settings.FirstAsync(x => x.UserId == user.Id);
-            return Results.Ok(new SettingDto(s.BaseCurrency));
+            var result = await svc.GetAsync(user.Id);
+            return ToHttp(result);
         });
 
-        g.MapPut("", async (ICurrentUser cu, AppDbContext db, SettingDto input) =>
+        g.MapPut("", async (ICurrentUser cu, SettingService svc, SettingDto input) =>
         {
             var user = await cu.GetOrCreateAsync();
-            if (string.IsNullOrWhiteSpace(input.BaseCurrency)) return Results.BadRequest("Base currency required.");
-            var s = await db.Settings.FirstAsync(x => x.UserId == user.Id);
-            s.BaseCurrency = input.BaseCurrency.ToUpperInvariant();
-            await db.SaveChangesAsync();
-            return Results.Ok(new SettingDto(s.BaseCurrency));
+            var result = await svc.UpdateAsync(user.Id, input);
+            return ToHttp(result);
         });
 
         return api;
     }
+
+    static IResult ToHttp<T>(OperationResult<T> r, string? createdAtPath = null) => r.Status switch
+    {
+        ResultStatus.Ok => Results.Ok(r.Value),
+        ResultStatus.Created => Results.Created(createdAtPath ?? "", r.Value),
+        ResultStatus.NoContent => Results.NoContent(),
+        ResultStatus.NotFound => Results.NotFound(),
+        ResultStatus.BadRequest => Results.BadRequest(r.Error),
+        _ => Results.StatusCode(500),
+    };
 }

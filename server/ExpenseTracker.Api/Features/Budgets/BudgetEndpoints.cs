@@ -1,8 +1,6 @@
-using ExpenseTracker.Api.Data;
 using ExpenseTracker.Application.Budgets;
+using ExpenseTracker.Application.Common;
 using ExpenseTracker.Application.Common.Interfaces;
-using ExpenseTracker.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
 
 namespace ExpenseTracker.Api.Features.Budgets;
 
@@ -12,38 +10,29 @@ public static class BudgetEndpoints
     {
         var g = api.MapGroup("/budgets");
 
-        g.MapGet("", async (ICurrentUser cu, AppDbContext db) =>
+        g.MapGet("", async (ICurrentUser cu, BudgetService svc) =>
         {
             var user = await cu.GetOrCreateAsync();
-            return Results.Ok(await db.Budgets.Where(b => b.UserId == user.Id)
-                .Select(b => new BudgetDto(b.Id, b.CategoryId, b.LimitAmount, b.CurrencyCode))
-                .ToListAsync());
+            return Results.Ok(await svc.ListAsync(user.Id));
         });
 
-        g.MapPut("", async (ICurrentUser cu, AppDbContext db, BudgetInput input) =>
+        g.MapPut("", async (ICurrentUser cu, BudgetService svc, BudgetInput input) =>
         {
             var user = await cu.GetOrCreateAsync();
-            if (input.LimitAmount <= 0) return Results.BadRequest("Limit must be positive.");
-            if (string.IsNullOrWhiteSpace(input.CurrencyCode)) return Results.BadRequest("Currency required.");
-            if (input.CategoryId is not null)
-            {
-                var ownsCategory = await db.Categories.AnyAsync(c => c.Id == input.CategoryId && c.UserId == user.Id);
-                if (!ownsCategory) return Results.BadRequest("Unknown category.");
-            }
-            var existing = await db.Budgets.FirstOrDefaultAsync(b =>
-                b.UserId == user.Id && b.CategoryId == input.CategoryId);
-            if (existing is null)
-            {
-                existing = new Budget { UserId = user.Id, CategoryId = input.CategoryId };
-                db.Budgets.Add(existing);
-            }
-            existing.LimitAmount = input.LimitAmount;
-            existing.CurrencyCode = input.CurrencyCode.ToUpperInvariant();
-            await db.SaveChangesAsync();
-            return Results.Ok(new BudgetDto(existing.Id, existing.CategoryId,
-                existing.LimitAmount, existing.CurrencyCode));
+            var result = await svc.UpsertAsync(user.Id, input);
+            return ToHttp(result);
         });
 
         return api;
     }
+
+    static IResult ToHttp<T>(OperationResult<T> r, string? createdAtPath = null) => r.Status switch
+    {
+        ResultStatus.Ok => Results.Ok(r.Value),
+        ResultStatus.Created => Results.Created(createdAtPath ?? "", r.Value),
+        ResultStatus.NoContent => Results.NoContent(),
+        ResultStatus.NotFound => Results.NotFound(),
+        ResultStatus.BadRequest => Results.BadRequest(r.Error),
+        _ => Results.StatusCode(500),
+    };
 }

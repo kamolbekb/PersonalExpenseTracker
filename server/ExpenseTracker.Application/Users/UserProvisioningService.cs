@@ -1,26 +1,24 @@
-using System.Security.Claims;
-using ExpenseTracker.Api.Data;
 using ExpenseTracker.Application.Common.Interfaces;
 using ExpenseTracker.Domain;
 using ExpenseTracker.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace ExpenseTracker.Api.Auth;
+namespace ExpenseTracker.Application.Users;
 
-public class CurrentUserAccessor(IHttpContextAccessor http, AppDbContext db) : ICurrentUser
+public class UserProvisioningService(IUserContext userContext, IApplicationDbContext db) : ICurrentUser
 {
     public async Task<User> GetOrCreateAsync()
     {
-        var principal = http.HttpContext!.User;
-        var tgId = long.Parse(principal.FindFirstValue("tg_id")!);
+        var tgId = userContext.TelegramUserId
+            ?? throw new InvalidOperationException("TelegramUserId is not set.");
         var user = await db.Users.FirstOrDefaultAsync(u => u.TelegramUserId == tgId);
         if (user is not null) return user;
 
         user = new User
         {
             TelegramUserId = tgId,
-            FirstName = principal.FindFirstValue(ClaimTypes.GivenName),
-            Username = principal.FindFirstValue("tg_username"),
+            FirstName = userContext.FirstName,
+            Username = userContext.Username,
             CreatedAt = DateTimeOffset.UtcNow,
         };
         db.Users.Add(user);

@@ -20,19 +20,10 @@ public static class BudgetEndpoints
         {
             var user = await cu.GetOrCreateAsync();
             var result = await svc.UpsertAsync(user.Id, input);
-            return ToHttp(result);
+            return EndpointResults.ToHttp(result);
         });
 
         return api;
     }
 
-    static IResult ToHttp<T>(OperationResult<T> r, string? createdAtPath = null) => r.Status switch
-    {
-        ResultStatus.Ok => Results.Ok(r.Value),
-        ResultStatus.Created => Results.Created(createdAtPath ?? "", r.Value),
-        ResultStatus.NoContent => Results.NoContent(),
-        ResultStatus.NotFound => Results.NotFound(),
-        ResultStatus.BadRequest => Results.BadRequest(r.Error),
-        _ => Results.StatusCode(500),
-    };
 }

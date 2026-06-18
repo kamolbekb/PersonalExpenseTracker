@@ -9,7 +9,8 @@ public interface IApplicationDbContext
     DbSet<Category> Categories { get; }
     DbSet<Expense> Expenses { get; }
     DbSet<Budget> Budgets { get; }
-    DbSet<ExchangeRate> ExchangeRates { get; }
+    DbSet<CurrencyRate> CurrencyRates { get; }
+    DbSet<GoldPrice> GoldPrices { get; }
     DbSet<Setting> Settings { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

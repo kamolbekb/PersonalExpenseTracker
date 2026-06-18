@@ -3,6 +3,7 @@ using ExpenseTracker.Application.Users;
 using ExpenseTracker.Infrastructure.ExchangeRates;
 using ExpenseTracker.Infrastructure.Identity;
 using ExpenseTracker.Infrastructure.Persistence;
+using ExpenseTracker.Infrastructure.Time;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,8 +24,8 @@ public static class DependencyInjection
         services.AddScoped<IUserContext, UserContext>();
         services.AddScoped<ICurrentUser, UserProvisioningService>();
         services.AddSingleton<TelegramInitDataValidator>();
-        services.AddHttpClient<IExchangeRateProvider, FrankfurterRateProvider>(c =>
-            c.BaseAddress = new Uri("https://api.frankfurter.app/"));
+        services.AddSingleton<IClock, TashkentClock>();
+        services.AddHttpClient<IRateSource, CbuRateProvider>(c => c.BaseAddress = new Uri("https://cbu.uz/"));
         return services;
     }
 }

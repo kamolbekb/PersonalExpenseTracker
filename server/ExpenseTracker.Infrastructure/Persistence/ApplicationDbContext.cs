@@ -10,7 +10,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<Expense> Expenses => Set<Expense>();
     public DbSet<Budget> Budgets => Set<Budget>();
-    public DbSet<ExchangeRate> ExchangeRates => Set<ExchangeRate>();
+    public DbSet<CurrencyRate> CurrencyRates => Set<CurrencyRate>();
+    public DbSet<GoldPrice> GoldPrices => Set<GoldPrice>();
     public DbSet<Setting> Settings => Set<Setting>();
 
     protected override void OnModelCreating(ModelBuilder b)
@@ -20,11 +21,17 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         b.Entity<Expense>().HasIndex(e => new { e.UserId, e.SpentOn });
         b.Entity<Category>().HasIndex(c => c.UserId);
         b.Entity<Budget>().HasIndex(bg => bg.UserId);
-        b.Entity<ExchangeRate>()
-            .HasIndex(r => new { r.BaseCurrency, r.QuoteCurrency, r.AsOfDate }).IsUnique();
 
         b.Entity<Expense>().Property(e => e.Amount).HasColumnType("decimal(18,2)");
         b.Entity<Budget>().Property(e => e.LimitAmount).HasColumnType("decimal(18,2)");
-        b.Entity<ExchangeRate>().Property(e => e.Rate).HasColumnType("decimal(18,8)");
+
+        b.Entity<CurrencyRate>().HasIndex(r => new { r.Source, r.CurrencyCode, r.AsOfDate }).IsUnique();
+        b.Entity<CurrencyRate>().HasIndex(r => r.AsOfDate);
+        b.Entity<CurrencyRate>().Property(r => r.Rate).HasColumnType("decimal(18,6)");
+        b.Entity<CurrencyRate>().Property(r => r.Buy).HasColumnType("decimal(18,6)");
+        b.Entity<CurrencyRate>().Property(r => r.Sell).HasColumnType("decimal(18,6)");
+        b.Entity<GoldPrice>().HasIndex(g => new { g.AsOfDate, g.Item }).IsUnique();
+        b.Entity<GoldPrice>().Property(g => g.SellPrice).HasColumnType("decimal(18,2)");
+        b.Entity<GoldPrice>().Property(g => g.BuyBackPrice).HasColumnType("decimal(18,2)");
     }
 }

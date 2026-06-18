@@ -1,8 +1,12 @@
+using ExpenseTracker.Application.Common.Interfaces;
 using ExpenseTracker.Infrastructure.Persistence;
+using ExpenseTracker.Tests.TestData;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Testcontainers.PostgreSql;
 using Xunit;
 
@@ -17,6 +21,11 @@ public class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
     {
         builder.UseSetting("ConnectionStrings:Default", _db.GetConnectionString());
         builder.UseSetting("BotToken", BotToken);
+        builder.ConfigureTestServices(services =>
+        {
+            services.RemoveAll<IRateSource>();
+            services.AddSingleton<IRateSource, StubRateSource>();
+        });
     }
 
     public async Task InitializeAsync()

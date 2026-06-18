@@ -36,6 +36,8 @@ api.MapCategoryEndpoints();
 api.MapBudgetEndpoints();
 api.MapReportEndpoints();
 api.MapSettingEndpoints();
+api.MapRatesEndpoints();
+api.MapGoldEndpoints();
 
 app.MapFallbackToFile("index.html");
 

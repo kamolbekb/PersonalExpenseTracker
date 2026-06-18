@@ -35,4 +35,18 @@ public class RatesService(IApplicationDbContext db, IEnumerable<IRateSource> sou
             r => r.Source == "CBU" && r.CurrencyCode == currency && r.AsOfDate == date, ct);
         return row?.Rate;
     }
+
+    public async Task<RatesView> GetRatesAsync(DateOnly? date, IReadOnlyList<string> currencies, CancellationToken ct = default)
+    {
+        var d = date ?? DateOnly.FromDateTime(DateTime.UtcNow);
+        await EnsureAllSourcesForDateAsync(d, ct);
+        var wanted = currencies.Select(c => c.ToUpperInvariant()).ToHashSet();
+        var rows = await db.CurrencyRates
+            .Where(r => r.AsOfDate == d && wanted.Contains(r.CurrencyCode))
+            .OrderBy(r => r.Source).ThenBy(r => r.CurrencyCode)
+            .Select(r => new RateRow(r.Source, r.CurrencyCode, r.Rate,
+                r.Rate == 0 ? 0 : 1m / r.Rate, r.Buy, r.Sell))
+            .ToListAsync(ct);
+        return new RatesView(d.ToString("yyyy-MM-dd"), rows);
+    }
 }

@@ -110,7 +110,7 @@ export const useDeleteExpense = () => {
 	});
 };
 
-export const useRates = (date: string, currencies = "USD,RUB") =>
+export const useRates = (date: string, currencies = "USD,RUB,KZT") =>
 	useQuery({
 		queryKey: ["rates", date, currencies],
 		queryFn: () =>

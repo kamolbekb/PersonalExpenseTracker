@@ -1,13 +1,42 @@
+/**
+ * Bridges the app's own "warm editorial" design system to the Telegram client:
+ * - expands the viewport,
+ * - mirrors the user's light/dark choice onto <html data-theme>,
+ * - paints Telegram's native header/background to match our --bg so the chrome
+ *   blends seamlessly (no white bar above a warm-paper app).
+ *
+ * It does NOT overwrite our design tokens — the palette lives in index.css.
+ */
+function bgFor(scheme: "light" | "dark"): string {
+	return scheme === "dark" ? "#000000" : "#f2f2f7";
+}
+
 export function applyTelegramTheme(): void {
+	const root = document.documentElement;
 	const wa = window.Telegram?.WebApp;
-	if (!wa) return;
+
+	const sync = () => {
+		const scheme: "light" | "dark" =
+			wa?.colorScheme ??
+			(window.matchMedia?.("(prefers-color-scheme: dark)").matches
+				? "dark"
+				: "light");
+		root.setAttribute("data-theme", scheme);
+		const bg = bgFor(scheme);
+		wa?.setHeaderColor?.(bg);
+		wa?.setBackgroundColor?.(bg);
+	};
+
+	if (!wa) {
+		sync();
+		window
+			.matchMedia?.("(prefers-color-scheme: dark)")
+			.addEventListener?.("change", sync);
+		return;
+	}
+
 	wa.ready();
 	wa.expand();
-	const p = wa.themeParams ?? {};
-	const root = document.documentElement.style;
-	root.setProperty("--bg", p.bg_color ?? "#ffffff");
-	root.setProperty("--text", p.text_color ?? "#000000");
-	root.setProperty("--hint", p.hint_color ?? "#888888");
-	root.setProperty("--button", p.button_color ?? "#2481cc");
-	root.setProperty("--button-text", p.button_text_color ?? "#ffffff");
+	sync();
+	wa.onEvent?.("themeChanged", sync);
 }

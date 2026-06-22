@@ -6,6 +6,10 @@ declare global {
 				ready: () => void;
 				expand: () => void;
 				themeParams: Record<string, string>;
+				colorScheme?: "light" | "dark";
+				setHeaderColor?: (color: string) => void;
+				setBackgroundColor?: (color: string) => void;
+				onEvent?: (event: string, cb: () => void) => void;
 				MainButton: {
 					setText: (t: string) => void;
 					show: () => void;

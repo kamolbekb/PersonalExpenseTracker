@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import {
 	Bar,
 	BarChart,
@@ -27,30 +27,21 @@ const COLORS = [
 const fmt = (n: number) =>
 	n.toLocaleString("en-US", { maximumFractionDigits: 0 });
 
-// The current calendar month → its range and a display title (e.g. "June").
-function thisMonth() {
+// First day of the current month (the default "from").
+const monthStart = () => {
 	const d = new Date();
-	return {
-		title: d.toLocaleDateString("en-US", { month: "long" }),
-		from: localDateString(new Date(d.getFullYear(), d.getMonth(), 1)),
-		to: localDateString(new Date(d.getFullYear(), d.getMonth() + 1, 0)),
-	};
-}
+	return localDateString(new Date(d.getFullYear(), d.getMonth(), 1));
+};
 
 export default function Reports() {
-	const month = useMemo(thisMonth, []);
-	const [custom, setCustom] = useState(false);
+	// Always-visible date range, defaulting to this month → today.
+	const [from, setFrom] = useState(monthStart);
+	const [to, setTo] = useState(() => localDateString(new Date()));
 
-	// Custom range defaults to the current month → today.
-	const [customFrom, setCustomFrom] = useState(month.from);
-	const [customTo, setCustomTo] = useState(localDateString(new Date()));
-
-	const range = custom
-		? { from: customFrom, to: customTo }
-		: { from: month.from, to: month.to };
-	const title = custom ? `${customFrom} → ${customTo}` : month.title;
-	// a custom range spans >1 month when its from/to year-months differ
-	const isRange = custom && customFrom.slice(0, 7) !== customTo.slice(0, 7);
+	const range = { from, to };
+	const title = `${from} → ${to}`;
+	// spans >1 month when the from/to year-months differ → offer By-month
+	const isRange = from.slice(0, 7) !== to.slice(0, 7);
 
 	const [view, setView] = useState<"category" | "month">("category");
 	const { data: report } = useReport(range);
@@ -59,46 +50,28 @@ export default function Reports() {
 
 	return (
 		<div className="screen">
-			{/* period selector */}
-			<div className="chips">
-				<button
-					className={`chip${!custom ? " chip--active" : ""}`}
-					onClick={() => setCustom(false)}
-				>
-					This month
-				</button>
-				<button
-					className={`chip${custom ? " chip--active" : ""}`}
-					onClick={() => setCustom(true)}
-				>
-					Select date range
-				</button>
-			</div>
-
-			{custom && (
-				<section className="card">
-					<div className="row" style={{ gap: 10 }}>
-						<div className="field grow">
-							<label>From</label>
-							<input
-								type="date"
-								value={customFrom}
-								max={customTo}
-								onChange={(e) => setCustomFrom(e.target.value)}
-							/>
-						</div>
-						<div className="field grow">
-							<label>To</label>
-							<input
-								type="date"
-								value={customTo}
-								min={customFrom}
-								onChange={(e) => setCustomTo(e.target.value)}
-							/>
-						</div>
+			<section className="card">
+				<div className="row" style={{ gap: 10 }}>
+					<div className="field grow">
+						<label>From</label>
+						<input
+							type="date"
+							value={from}
+							max={to}
+							onChange={(e) => setFrom(e.target.value)}
+						/>
 					</div>
-				</section>
-			)}
+					<div className="field grow">
+						<label>To</label>
+						<input
+							type="date"
+							value={to}
+							min={from}
+							onChange={(e) => setTo(e.target.value)}
+						/>
+					</div>
+				</div>
+			</section>
 
 			<section className="card hero">
 				<p className="eyebrow">Total · {title}</p>

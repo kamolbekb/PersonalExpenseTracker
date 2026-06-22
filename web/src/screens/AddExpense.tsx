@@ -1,24 +1,27 @@
 import { useEffect, useRef, useState } from "react";
 import { useCategories, useCreateExpense, useSettings } from "../api/hooks";
 import { localDateString } from "../lib/date";
+import { CURRENCIES } from "../lib/currencies";
 
 const today = () => localDateString(new Date());
 const inTelegram = () => Boolean(window.Telegram?.WebApp?.initData);
 
-// Common currencies; the chosen base currency is always included.
-const CURRENCIES = [
-	"UZS",
-	"USD",
-	"RUB",
-	"EUR",
-	"GBP",
-	"KZT",
-	"TRY",
-	"KRW",
-	"JPY",
-	"CNY",
-	"AED",
-];
+// Format a typed amount with thousands separators, keeping up to 2 decimals.
+function formatAmount(raw: string): string {
+	let s = raw.replace(/[^\d.]/g, "");
+	const dot = s.indexOf(".");
+	if (dot !== -1)
+		s =
+			s.slice(0, dot + 1) +
+			s
+				.slice(dot + 1)
+				.replace(/\./g, "")
+				.slice(0, 2);
+	const [int, dec] = s.split(".");
+	const intFmt = int ? Number(int).toLocaleString("en-US") : "";
+	return dec !== undefined ? `${intFmt}.${dec}` : intFmt;
+}
+const toNumber = (s: string) => parseFloat(s.replace(/,/g, ""));
 
 export default function AddExpense() {
 	const { data: categories } = useCategories();
@@ -44,7 +47,7 @@ export default function AddExpense() {
 	const submitRef = useRef<() => void>(() => {});
 	submitRef.current = () => {
 		const wa = window.Telegram?.WebApp;
-		const value = parseFloat(amount);
+		const value = toNumber(amount);
 		if (!value || value <= 0 || categoryId === null) return;
 		wa?.MainButton.showProgress();
 		createExpense.mutate(
@@ -83,7 +86,7 @@ export default function AddExpense() {
 		};
 	}, []);
 
-	const canSave = parseFloat(amount) > 0 && categoryId !== null;
+	const canSave = toNumber(amount) > 0 && categoryId !== null;
 
 	return (
 		<div className="screen">
@@ -94,7 +97,7 @@ export default function AddExpense() {
 						inputMode="decimal"
 						placeholder="0.00"
 						value={amount}
-						onChange={(e) => setAmount(e.target.value)}
+						onChange={(e) => setAmount(formatAmount(e.target.value))}
 						autoFocus
 					/>
 					<select
@@ -103,7 +106,7 @@ export default function AddExpense() {
 						onChange={(e) => setCurrency(e.target.value)}
 						aria-label="Currency"
 					>
-						{(CURRENCIES.includes(currency)
+						{(CURRENCIES.includes(currency as (typeof CURRENCIES)[number])
 							? CURRENCIES
 							: [currency, ...CURRENCIES]
 						).map((c) => (

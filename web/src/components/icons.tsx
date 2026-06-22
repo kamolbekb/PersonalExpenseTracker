@@ -41,8 +41,10 @@ export const IconRates = (p: P) => (
 );
 export const IconSettings = (p: P) => (
 	<svg {...base} {...p}>
-		<circle cx="12" cy="12" r="3" />
-		<path d="M19.4 13.5a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2v.1a2 2 0 1 1-4 0v-.2a1.7 1.7 0 0 0-2.9-1.1l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0-1.1-2.9H4a2 2 0 1 1 0-4h.2a1.7 1.7 0 0 0 1.1-2.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h.1a1.7 1.7 0 0 0 1-1.5V4a2 2 0 1 1 4 0v.2a1.7 1.7 0 0 0 2.9 1.1l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v.1a1.7 1.7 0 0 0 1.5 1H20a2 2 0 1 1 0 4h-.2a1.7 1.7 0 0 0-1.5 1z" />
+		<path d="M4 7h16M4 12h16M4 17h16" />
+		<circle cx="15" cy="7" r="2.5" fill="currentColor" stroke="none" />
+		<circle cx="9" cy="12" r="2.5" fill="currentColor" stroke="none" />
+		<circle cx="16" cy="17" r="2.5" fill="currentColor" stroke="none" />
 	</svg>
 );
 export const IconTrash = (p: P) => (

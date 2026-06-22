@@ -36,12 +36,39 @@ type Period = {
 	multiMonth: boolean; // spans >1 month → offer the By-month breakdown
 };
 
-// Selector options: All time · each recent year · last 6 months · last 12 months.
+const monthPeriod = (y: number, m: number): Period => {
+	const d = new Date(y, m, 1);
+	const sameYear = d.getFullYear() === new Date().getFullYear();
+	return {
+		key: `${d.getFullYear()}-${d.getMonth()}`,
+		chip: d.toLocaleDateString("en-US", { month: "short" }),
+		title: d.toLocaleDateString("en-US", {
+			month: "long",
+			...(sameYear ? {} : { year: "numeric" }),
+		}),
+		from: localDateString(new Date(d.getFullYear(), d.getMonth(), 1)),
+		to: localDateString(new Date(d.getFullYear(), d.getMonth() + 1, 0)),
+		multiMonth: false,
+	};
+};
+
+// Quick presets: this month (default) · 6 months · all time · years · earlier months.
 function buildPeriods(): Period[] {
 	const now = new Date();
 	const y = now.getFullYear();
 	const m = now.getMonth();
 	const today = localDateString(now);
+
+	const thisMonth = monthPeriod(y, m);
+
+	const six: Period = {
+		key: "6m",
+		chip: "6 months",
+		title: "last 6 months",
+		from: localDateString(new Date(y, m - 5, 1)),
+		to: localDateString(new Date(y, m + 1, 0)),
+		multiMonth: true,
+	};
 
 	const allTime: Period = {
 		key: "all",
@@ -65,48 +92,41 @@ function buildPeriods(): Period[] {
 		});
 	}
 
-	const six: Period = {
-		key: "6m",
-		chip: "6 months",
-		title: "last 6 months",
-		from: localDateString(new Date(y, m - 5, 1)),
-		to: localDateString(new Date(y, m + 1, 0)),
-		multiMonth: true,
-	};
+	// earlier months (skip the current one — it's already first)
+	const earlier: Period[] = [];
+	for (let i = 1; i < 12; i++) earlier.push(monthPeriod(y, m - i));
 
-	const months: Period[] = [];
-	for (let i = 0; i < 12; i++) {
-		const d = new Date(y, m - i, 1);
-		const sameYear = d.getFullYear() === y;
-		months.push({
-			key: `${d.getFullYear()}-${d.getMonth()}`,
-			chip: d.toLocaleDateString("en-US", { month: "short" }),
-			title: d.toLocaleDateString("en-US", {
-				month: "long",
-				...(sameYear ? {} : { year: "numeric" }),
-			}),
-			from: localDateString(new Date(d.getFullYear(), d.getMonth(), 1)),
-			to: localDateString(new Date(d.getFullYear(), d.getMonth() + 1, 0)),
-			multiMonth: false,
-		});
-	}
-	return [allTime, ...years, six, ...months];
+	return [thisMonth, six, allTime, ...years, ...earlier];
 }
 
 export default function Reports() {
 	const periods = useMemo(buildPeriods, []);
-	const [periodKey, setPeriodKey] = useState("6m");
-	const period = periods.find((p) => p.key === periodKey) ?? periods[0];
-	const isRange = period.multiMonth;
+	// Default to the active (current) month.
+	const [periodKey, setPeriodKey] = useState(periods[0].key);
+
+	// Custom range (defaults to this month → today).
+	const [customFrom, setCustomFrom] = useState(periods[0].from);
+	const [customTo, setCustomTo] = useState(localDateString(new Date()));
+	const isCustom = periodKey === "custom";
+
+	const preset = periods.find((p) => p.key === periodKey) ?? periods[0];
+	const range = isCustom
+		? { from: customFrom, to: customTo }
+		: { from: preset.from, to: preset.to };
+	const title = isCustom ? `${customFrom} → ${customTo}` : preset.title;
+	// custom spans >1 month if the year-month of from/to differ
+	const isRange = isCustom
+		? customFrom.slice(0, 7) !== customTo.slice(0, 7)
+		: preset.multiMonth;
 
 	const [view, setView] = useState<"category" | "month">("category");
-	const { data: report } = useReport({ from: period.from, to: period.to });
+	const { data: report } = useReport(range);
 
 	const hasData = (report?.byCategory.length ?? 0) > 0;
 
 	return (
 		<div className="screen">
-			{/* month / range selector */}
+			{/* period selector */}
 			<div className="chips">
 				{periods.map((p) => (
 					<button
@@ -117,10 +137,41 @@ export default function Reports() {
 						{p.chip}
 					</button>
 				))}
+				<button
+					className={`chip${isCustom ? " chip--active" : ""}`}
+					onClick={() => setPeriodKey("custom")}
+				>
+					Custom…
+				</button>
 			</div>
 
+			{isCustom && (
+				<section className="card">
+					<div className="row" style={{ gap: 10 }}>
+						<div className="field grow">
+							<label>From</label>
+							<input
+								type="date"
+								value={customFrom}
+								max={customTo}
+								onChange={(e) => setCustomFrom(e.target.value)}
+							/>
+						</div>
+						<div className="field grow">
+							<label>To</label>
+							<input
+								type="date"
+								value={customTo}
+								min={customFrom}
+								onChange={(e) => setCustomTo(e.target.value)}
+							/>
+						</div>
+					</div>
+				</section>
+			)}
+
 			<section className="card hero">
-				<p className="eyebrow">Total · {period.title}</p>
+				<p className="eyebrow">Total · {title}</p>
 				<div className="amount-display" style={{ fontSize: 46, marginTop: 4 }}>
 					{fmt(report?.grandTotal ?? 0)}
 					<span
@@ -139,7 +190,7 @@ export default function Reports() {
 			{!hasData && (
 				<div className="card empty">
 					<span className="emoji">📊</span>
-					Nothing spent in {period.title}.
+					Nothing spent in {title}.
 				</div>
 			)}
 

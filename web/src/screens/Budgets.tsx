@@ -17,6 +17,9 @@ const monthRange = () => {
 	return { from, to };
 };
 
+const fmt = (n: number) =>
+	n.toLocaleString("en-US", { maximumFractionDigits: 0 });
+
 export default function Budgets() {
 	const { data: budgets } = useBudgets();
 	const { data: categories } = useCategories();
@@ -26,6 +29,8 @@ export default function Budgets() {
 
 	const [categoryId, setCategoryId] = useState<string>("");
 	const [limit, setLimit] = useState("");
+
+	const cur = settings?.baseCurrency ?? "UZS";
 
 	const spentFor = (catId: number | null) =>
 		catId === null
@@ -39,7 +44,7 @@ export default function Budgets() {
 			{
 				categoryId: categoryId === "" ? null : Number(categoryId),
 				limitAmount: value,
-				currencyCode: settings?.baseCurrency ?? "USD",
+				currencyCode: cur,
 			},
 			{ onSuccess: () => setLimit("") },
 		);
@@ -47,42 +52,88 @@ export default function Budgets() {
 
 	return (
 		<div className="screen">
-			<h2>Budgets ({settings?.baseCurrency})</h2>
-			<ul className="list">
-				{budgets?.map((b) => {
-					const spent = spentFor(b.categoryId);
-					const label =
-						b.categoryId === null
-							? "Overall"
-							: (categories?.find((c) => c.id === b.categoryId)?.name ?? "—");
-					const over = spent > b.limitAmount;
-					return (
-						<li key={b.id} style={{ color: over ? "crimson" : undefined }}>
-							{label}: {spent.toFixed(2)} / {b.limitAmount.toFixed(2)}
-						</li>
-					);
-				})}
-			</ul>
-			<div className="row">
-				<select
-					value={categoryId}
-					onChange={(e) => setCategoryId(e.target.value)}
-				>
-					<option value="">Overall</option>
-					{categories?.map((c) => (
-						<option key={c.id} value={c.id}>
-							{c.name}
-						</option>
-					))}
-				</select>
-				<input
-					inputMode="decimal"
-					placeholder="Limit"
-					value={limit}
-					onChange={(e) => setLimit(e.target.value)}
-				/>
-				<button onClick={submit}>Save</button>
-			</div>
+			<p className="eyebrow">This month · {cur}</p>
+
+			{budgets && budgets.length === 0 && (
+				<div className="card empty">
+					<span className="emoji">🎯</span>
+					No budgets yet. Set a monthly limit below.
+				</div>
+			)}
+
+			{budgets?.map((b) => {
+				const spent = spentFor(b.categoryId);
+				const label =
+					b.categoryId === null
+						? "Overall"
+						: (categories?.find((c) => c.id === b.categoryId)?.name ?? "—");
+				const ratio = b.limitAmount ? spent / b.limitAmount : 0;
+				const pct = Math.min(ratio * 100, 100);
+				const state = ratio > 1 ? "over" : ratio > 0.8 ? "warn" : "ok";
+				const remaining = b.limitAmount - spent;
+				return (
+					<section className="card" key={b.id}>
+						<div
+							className="row"
+							style={{
+								justifyContent: "space-between",
+								alignItems: "baseline",
+							}}
+						>
+							<span style={{ fontWeight: 700 }}>{label}</span>
+							<span className="num" style={{ fontWeight: 600 }}>
+								{fmt(spent)}{" "}
+								<span style={{ color: "var(--muted)" }}>
+									/ {fmt(b.limitAmount)}
+								</span>
+							</span>
+						</div>
+						<div className="progress" style={{ margin: "12px 0 10px" }}>
+							<div
+								className={`progress__bar progress__bar--${state}`}
+								style={{ width: `${pct}%` }}
+							/>
+						</div>
+						<span
+							className={`pill ${remaining < 0 ? "pill--neg" : "pill--pos"}`}
+						>
+							{remaining < 0
+								? `${fmt(-remaining)} ${cur} over`
+								: `${fmt(remaining)} ${cur} left`}
+						</span>
+					</section>
+				);
+			})}
+
+			<section className="card">
+				<h3>Set a limit</h3>
+				<div className="field">
+					<label>Category</label>
+					<select
+						value={categoryId}
+						onChange={(e) => setCategoryId(e.target.value)}
+					>
+						<option value="">Overall (all spending)</option>
+						{categories?.map((c) => (
+							<option key={c.id} value={c.id}>
+								{c.emoji} {c.name}
+							</option>
+						))}
+					</select>
+				</div>
+				<div className="row" style={{ marginTop: 12 }}>
+					<input
+						className="grow"
+						inputMode="decimal"
+						placeholder={`Monthly limit (${cur})`}
+						value={limit}
+						onChange={(e) => setLimit(e.target.value)}
+					/>
+					<button className="btn btn--primary" onClick={submit}>
+						Save
+					</button>
+				</div>
+			</section>
 		</div>
 	);
 }

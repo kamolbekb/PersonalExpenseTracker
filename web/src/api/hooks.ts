@@ -8,6 +8,8 @@ import type {
 	ExpenseInput,
 	ReportSummary,
 	Settings,
+	RatesView,
+	GoldView,
 } from "./types";
 
 export const useCategories = () =>
@@ -107,3 +109,16 @@ export const useDeleteExpense = () => {
 		},
 	});
 };
+
+export const useRates = (date: string, currencies = "USD,RUB") =>
+	useQuery({
+		queryKey: ["rates", date, currencies],
+		queryFn: () =>
+			api<RatesView>(`/rates?date=${date}&currencies=${currencies}`),
+	});
+
+export const useGold = (date: string) =>
+	useQuery({
+		queryKey: ["gold", date],
+		queryFn: () => api<GoldView>(`/gold?date=${date}`),
+	});

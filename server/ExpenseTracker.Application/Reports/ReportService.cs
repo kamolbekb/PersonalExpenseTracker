@@ -26,8 +26,16 @@ public class ReportService(IApplicationDbContext db, ExchangeRateService rates, 
 
         foreach (var r in rows)
         {
-            var rate = await rates.GetRateAsync(r.CurrencyCode, baseCcy, r.SpentOn);
-            var amount = conv.Convert(r.Amount, rate);
+            decimal amount;
+            try
+            {
+                var rate = await rates.GetRateAsync(r.CurrencyCode, baseCcy, r.SpentOn);
+                amount = conv.Convert(r.Amount, rate);
+            }
+            catch (InvalidOperationException)
+            {
+                continue; // skip rows whose currency CBU does not quote for that date
+            }
             grand += amount;
 
             var cat = byCategory.GetValueOrDefault(r.CategoryId, (r.CategoryName, 0m));

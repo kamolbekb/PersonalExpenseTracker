@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useGold, useRates } from "../api/hooks";
+import { useGold, useRates, useSettings } from "../api/hooks";
 import { localDateString } from "../lib/date";
 
 const flag: Record<string, string> = {
@@ -24,6 +24,8 @@ export default function Rates() {
 	const [date, setDate] = useState(localDateString(new Date()));
 	const { data: rates } = useRates(date);
 	const { data: gold } = useGold(date);
+	const { data: settings } = useSettings();
+	const base = settings?.baseCurrency ?? "UZS";
 
 	// UZS per 1 unit of each currency (UZS itself = 1).
 	const ratePerUnit = useMemo(() => {
@@ -31,11 +33,17 @@ export default function Rates() {
 		rates?.rates.forEach((r) => (map[r.currency] = r.ratePerUnit));
 		return map;
 	}, [rates]);
-	const currencies = Object.keys(ratePerUnit); // e.g. ["UZS","USD","RUB"]
+	const currencies = Object.keys(ratePerUnit); // e.g. ["UZS","USD","RUB","KZT"]
 
 	const [amount, setAmount] = useState("100");
-	const [from, setFrom] = useState("USD");
-	const fromCur = currencies.includes(from) ? from : "UZS";
+	// Default the "from" currency to the user's base currency until they pick one.
+	const [from, setFrom] = useState<string | null>(null);
+	const fromCur =
+		from && currencies.includes(from)
+			? from
+			: currencies.includes(base)
+				? base
+				: (currencies[0] ?? "UZS");
 	const value = parseFloat(amount) || 0;
 	const inUzs = value * (ratePerUnit[fromCur] ?? 1);
 

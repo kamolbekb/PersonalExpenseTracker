@@ -27,97 +27,30 @@ const COLORS = [
 const fmt = (n: number) =>
 	n.toLocaleString("en-US", { maximumFractionDigits: 0 });
 
-type Period = {
-	key: string;
-	chip: string; // short label on the selector
-	title: string; // shown under the total
-	from: string;
-	to: string;
-	multiMonth: boolean; // spans >1 month → offer the By-month breakdown
-};
-
-const monthPeriod = (y: number, m: number): Period => {
-	const d = new Date(y, m, 1);
-	const sameYear = d.getFullYear() === new Date().getFullYear();
+// The current calendar month → its range and a display title (e.g. "June").
+function thisMonth() {
+	const d = new Date();
 	return {
-		key: `${d.getFullYear()}-${d.getMonth()}`,
-		chip: d.toLocaleDateString("en-US", { month: "short" }),
-		title: d.toLocaleDateString("en-US", {
-			month: "long",
-			...(sameYear ? {} : { year: "numeric" }),
-		}),
+		title: d.toLocaleDateString("en-US", { month: "long" }),
 		from: localDateString(new Date(d.getFullYear(), d.getMonth(), 1)),
 		to: localDateString(new Date(d.getFullYear(), d.getMonth() + 1, 0)),
-		multiMonth: false,
 	};
-};
-
-// Quick presets: this month (default) · 6 months · all time · years · earlier months.
-function buildPeriods(): Period[] {
-	const now = new Date();
-	const y = now.getFullYear();
-	const m = now.getMonth();
-	const today = localDateString(now);
-
-	const thisMonth = monthPeriod(y, m);
-
-	const six: Period = {
-		key: "6m",
-		chip: "6 months",
-		title: "last 6 months",
-		from: localDateString(new Date(y, m - 5, 1)),
-		to: localDateString(new Date(y, m + 1, 0)),
-		multiMonth: true,
-	};
-
-	const allTime: Period = {
-		key: "all",
-		chip: "All time",
-		title: "all time",
-		from: "2000-01-01",
-		to: today,
-		multiMonth: true,
-	};
-
-	const years: Period[] = [];
-	for (let i = 0; i < 3; i++) {
-		const yr = y - i;
-		years.push({
-			key: `y${yr}`,
-			chip: String(yr),
-			title: String(yr),
-			from: `${yr}-01-01`,
-			to: i === 0 ? today : `${yr}-12-31`,
-			multiMonth: true,
-		});
-	}
-
-	// earlier months (skip the current one — it's already first)
-	const earlier: Period[] = [];
-	for (let i = 1; i < 12; i++) earlier.push(monthPeriod(y, m - i));
-
-	return [thisMonth, six, allTime, ...years, ...earlier];
 }
 
 export default function Reports() {
-	const periods = useMemo(buildPeriods, []);
-	// Default to the active (current) month.
-	const [periodKey, setPeriodKey] = useState(periods[0].key);
+	const month = useMemo(thisMonth, []);
+	const [custom, setCustom] = useState(false);
 
-	// Custom range (defaults to this month → today).
-	const [customFrom, setCustomFrom] = useState(periods[0].from);
+	// Custom range defaults to the current month → today.
+	const [customFrom, setCustomFrom] = useState(month.from);
 	const [customTo, setCustomTo] = useState(localDateString(new Date()));
-	const isCustom = periodKey === "custom";
 
-	const preset = periods.find((p) => p.key === periodKey) ?? periods[0];
-	const range = isCustom
+	const range = custom
 		? { from: customFrom, to: customTo }
-		: { from: preset.from, to: preset.to };
-	const title = isCustom ? `${customFrom} → ${customTo}` : preset.title;
-	// custom spans >1 month if the year-month of from/to differ
-	const isRange = isCustom
-		? customFrom.slice(0, 7) !== customTo.slice(0, 7)
-		: preset.multiMonth;
+		: { from: month.from, to: month.to };
+	const title = custom ? `${customFrom} → ${customTo}` : month.title;
+	// a custom range spans >1 month when its from/to year-months differ
+	const isRange = custom && customFrom.slice(0, 7) !== customTo.slice(0, 7);
 
 	const [view, setView] = useState<"category" | "month">("category");
 	const { data: report } = useReport(range);
@@ -128,24 +61,21 @@ export default function Reports() {
 		<div className="screen">
 			{/* period selector */}
 			<div className="chips">
-				{periods.map((p) => (
-					<button
-						key={p.key}
-						className={`chip${p.key === periodKey ? " chip--active" : ""}`}
-						onClick={() => setPeriodKey(p.key)}
-					>
-						{p.chip}
-					</button>
-				))}
 				<button
-					className={`chip${isCustom ? " chip--active" : ""}`}
-					onClick={() => setPeriodKey("custom")}
+					className={`chip${!custom ? " chip--active" : ""}`}
+					onClick={() => setCustom(false)}
 				>
-					Custom…
+					This month
+				</button>
+				<button
+					className={`chip${custom ? " chip--active" : ""}`}
+					onClick={() => setCustom(true)}
+				>
+					Select date range
 				</button>
 			</div>
 
-			{isCustom && (
+			{custom && (
 				<section className="card">
 					<div className="row" style={{ gap: 10 }}>
 						<div className="field grow">

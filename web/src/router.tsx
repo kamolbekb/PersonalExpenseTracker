@@ -2,20 +2,19 @@ import {
 	createBrowserRouter,
 	RouterProvider,
 	NavLink,
+	Navigate,
 	Outlet,
 	useLocation,
 	useNavigate,
 } from "react-router-dom";
 import AddExpense from "./screens/AddExpense";
-import Expenses from "./screens/Expenses";
 import Categories from "./screens/Categories";
 import Budgets from "./screens/Budgets";
-import Reports from "./screens/Reports";
+import Spending from "./screens/Spending";
 import Settings from "./screens/Settings";
 import Rates from "./screens/Rates";
 import {
 	IconAdd,
-	IconList,
 	IconReports,
 	IconBudgets,
 	IconRates,
@@ -24,16 +23,14 @@ import {
 
 const TABS = [
 	{ to: "/", label: "Add", Icon: IconAdd, end: true },
-	{ to: "/expenses", label: "Expenses", Icon: IconList },
-	{ to: "/reports", label: "Reports", Icon: IconReports },
+	{ to: "/spending", label: "Spending", Icon: IconReports },
 	{ to: "/budgets", label: "Budgets", Icon: IconBudgets },
 	{ to: "/rates", label: "Rates", Icon: IconRates },
 ];
 
 const TITLES: Record<string, string> = {
 	"/": "Add expense",
-	"/expenses": "Expenses",
-	"/reports": "Reports",
+	"/spending": "Spending",
 	"/budgets": "Budgets",
 	"/rates": "Rates & gold",
 	"/settings": "Settings",
@@ -43,7 +40,7 @@ const TITLES: Record<string, string> = {
 function Layout() {
 	const { pathname } = useLocation();
 	const navigate = useNavigate();
-	const title = TITLES[pathname] ?? "Expenses";
+	const title = TITLES[pathname] ?? "Spending";
 
 	return (
 		<div className="app">
@@ -82,10 +79,11 @@ const router = createBrowserRouter([
 		element: <Layout />,
 		children: [
 			{ index: true, element: <AddExpense /> },
-			{ path: "expenses", element: <Expenses /> },
+			{ path: "spending", element: <Spending /> },
+			{ path: "expenses", element: <Navigate to="/spending" replace /> },
+			{ path: "reports", element: <Navigate to="/spending" replace /> },
 			{ path: "categories", element: <Categories /> },
 			{ path: "budgets", element: <Budgets /> },
-			{ path: "reports", element: <Reports /> },
 			{ path: "settings", element: <Settings /> },
 			{ path: "rates", element: <Rates /> },
 		],

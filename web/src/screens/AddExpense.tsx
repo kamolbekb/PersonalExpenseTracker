@@ -29,48 +29,46 @@ export default function AddExpense() {
 	const createExpense = useCreateExpense();
 
 	const [amount, setAmount] = useState("");
-	const [currency, setCurrency] = useState("UZS");
-	const [categoryId, setCategoryId] = useState<number | null>(null);
+	// Currency/category default from settings/first-category; user choices override.
+	const [currencyOverride, setCurrencyOverride] = useState<string | null>(null);
+	const [categoryOverride, setCategoryOverride] = useState<number | null>(null);
 	const [spentOn, setSpentOn] = useState(today());
 	const [note, setNote] = useState("");
 	const [justSaved, setJustSaved] = useState(false);
 
-	useEffect(() => {
-		if (settings) setCurrency(settings.baseCurrency);
-	}, [settings]);
-	useEffect(() => {
-		if (categories?.length && categoryId === null)
-			setCategoryId(categories[0].id);
-	}, [categories, categoryId]);
+	const currency = currencyOverride ?? settings?.baseCurrency ?? "UZS";
+	const categoryId = categoryOverride ?? categories?.[0]?.id ?? null;
 
 	// Keep the latest submit logic in a ref so the Main Button handler is registered once.
 	const submitRef = useRef<() => void>(() => {});
-	submitRef.current = () => {
-		const wa = window.Telegram?.WebApp;
-		const value = toNumber(amount);
-		if (!value || value <= 0 || categoryId === null) return;
-		wa?.MainButton.showProgress();
-		createExpense.mutate(
-			{
-				amount: value,
-				currencyCode: currency,
-				categoryId,
-				spentOn,
-				note: note || null,
-			},
-			{
-				onSuccess: () => {
-					wa?.HapticFeedback.impactOccurred("medium");
-					setAmount("");
-					setNote("");
-					setJustSaved(true);
-					setTimeout(() => setJustSaved(false), 1600);
-					wa?.MainButton.hideProgress();
+	useEffect(() => {
+		submitRef.current = () => {
+			const wa = window.Telegram?.WebApp;
+			const value = toNumber(amount);
+			if (!value || value <= 0 || categoryId === null) return;
+			wa?.MainButton.showProgress();
+			createExpense.mutate(
+				{
+					amount: value,
+					currencyCode: currency,
+					categoryId,
+					spentOn,
+					note: note || null,
 				},
-				onError: () => wa?.MainButton.hideProgress(),
-			},
-		);
-	};
+				{
+					onSuccess: () => {
+						wa?.HapticFeedback.impactOccurred("medium");
+						setAmount("");
+						setNote("");
+						setJustSaved(true);
+						setTimeout(() => setJustSaved(false), 1600);
+						wa?.MainButton.hideProgress();
+					},
+					onError: () => wa?.MainButton.hideProgress(),
+				},
+			);
+		};
+	});
 
 	useEffect(() => {
 		const wa = window.Telegram?.WebApp;
@@ -103,7 +101,7 @@ export default function AddExpense() {
 					<select
 						className="cur-select"
 						value={currency}
-						onChange={(e) => setCurrency(e.target.value)}
+						onChange={(e) => setCurrencyOverride(e.target.value)}
 						aria-label="Currency"
 					>
 						{(CURRENCIES.includes(currency as (typeof CURRENCIES)[number])
@@ -124,7 +122,7 @@ export default function AddExpense() {
 					<button
 						key={c.id}
 						className={`chip${categoryId === c.id ? " chip--active" : ""}`}
-						onClick={() => setCategoryId(c.id)}
+						onClick={() => setCategoryOverride(c.id)}
 					>
 						<span className="emoji">{c.emoji}</span>
 						{c.name}

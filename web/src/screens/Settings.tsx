@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useSettings, useUpdateSettings } from "../api/hooks";
 import { IconTag } from "../components/icons";
@@ -14,17 +14,14 @@ const THEMES: { key: ThemePref; label: string }[] = [
 export default function Settings() {
 	const { data: settings } = useSettings();
 	const update = useUpdateSettings();
-	const [base, setBase] = useState("UZS");
-	const [incomeOn, setIncomeOn] = useState(false);
+	const [baseOverride, setBaseOverride] = useState<string | null>(null);
+	const [incomeOverride, setIncomeOverride] = useState<boolean | null>(null);
 	const [saved, setSaved] = useState(false);
 	const [theme, setTheme] = useState<ThemePref>(getThemePref());
 
-	useEffect(() => {
-		if (settings) {
-			setBase(settings.baseCurrency);
-			setIncomeOn(settings.incomeTrackingEnabled);
-		}
-	}, [settings]);
+	// Form fields default from the saved settings; user choices override.
+	const base = baseOverride ?? settings?.baseCurrency ?? "UZS";
+	const incomeOn = incomeOverride ?? settings?.incomeTrackingEnabled ?? false;
 
 	const options = CURRENCIES.includes(base as (typeof CURRENCIES)[number])
 		? CURRENCIES
@@ -42,7 +39,7 @@ export default function Settings() {
 		);
 
 	const toggleIncome = (on: boolean) => {
-		setIncomeOn(on);
+		setIncomeOverride(on);
 		update.mutate({ baseCurrency: base, incomeTrackingEnabled: on });
 	};
 
@@ -75,7 +72,7 @@ export default function Settings() {
 					<select
 						className="grow"
 						value={base}
-						onChange={(e) => setBase(e.target.value)}
+						onChange={(e) => setBaseOverride(e.target.value)}
 					>
 						{options.map((c) => (
 							<option key={c} value={c}>

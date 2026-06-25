@@ -5,6 +5,7 @@ using ExpenseTracker.Application.Common.Interfaces;
 using ExpenseTracker.Application.ExchangeRates;
 using ExpenseTracker.Application.Expenses;
 using ExpenseTracker.Application.Gold;
+using ExpenseTracker.Application.IncomeCategories;
 using ExpenseTracker.Application.Rates;
 using ExpenseTracker.Application.Reports;
 using ExpenseTracker.Application.Settings;
@@ -22,6 +23,7 @@ public static class DependencyInjection
         services.AddScoped<ExchangeRateService>();
         services.AddScoped<ExpenseService>();
         services.AddScoped<CategoryService>();
+        services.AddScoped<IncomeCategoryService>();
         services.AddScoped<BudgetService>();
         services.AddScoped<ReportService>();
         services.AddScoped<SettingService>();

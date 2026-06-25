@@ -27,6 +27,12 @@ export const IconReports = (p: P) => (
 		<path d="M7.5 20v-7M12 20V6.5M16.5 20v-4.5" />
 	</svg>
 );
+export const IconIncome = (p: P) => (
+	<svg {...base} {...p}>
+		<path d="M12 3.5v9M8.5 9l3.5 3.5L15.5 9" />
+		<path d="M4.5 14.5v4a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5v-4" />
+	</svg>
+);
 export const IconBudgets = (p: P) => (
 	<svg {...base} {...p}>
 		<circle cx="12" cy="12" r="8.5" />

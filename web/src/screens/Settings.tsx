@@ -15,11 +15,15 @@ export default function Settings() {
 	const { data: settings } = useSettings();
 	const update = useUpdateSettings();
 	const [base, setBase] = useState("UZS");
+	const [incomeOn, setIncomeOn] = useState(false);
 	const [saved, setSaved] = useState(false);
 	const [theme, setTheme] = useState<ThemePref>(getThemePref());
 
 	useEffect(() => {
-		if (settings) setBase(settings.baseCurrency);
+		if (settings) {
+			setBase(settings.baseCurrency);
+			setIncomeOn(settings.incomeTrackingEnabled);
+		}
 	}, [settings]);
 
 	const options = CURRENCIES.includes(base as (typeof CURRENCIES)[number])
@@ -28,10 +32,7 @@ export default function Settings() {
 
 	const save = () =>
 		update.mutate(
-			{
-				baseCurrency: base,
-				incomeTrackingEnabled: settings?.incomeTrackingEnabled ?? false,
-			},
+			{ baseCurrency: base, incomeTrackingEnabled: incomeOn },
 			{
 				onSuccess: () => {
 					setSaved(true);
@@ -39,6 +40,11 @@ export default function Settings() {
 				},
 			},
 		);
+
+	const toggleIncome = (on: boolean) => {
+		setIncomeOn(on);
+		update.mutate({ baseCurrency: base, incomeTrackingEnabled: on });
+	};
 
 	const pickTheme = (t: ThemePref) => {
 		setTheme(t);
@@ -84,6 +90,30 @@ export default function Settings() {
 				<p className="hint" style={{ marginTop: 12 }}>
 					Reports and budgets convert all expenses to this currency using the
 					CBU rate as of each expense's date.
+				</p>
+			</section>
+
+			<p className="eyebrow">Income tracking</p>
+			<section className="card">
+				<div className="segmented" role="tablist">
+					<button
+						role="tab"
+						aria-selected={!incomeOn}
+						onClick={() => toggleIncome(false)}
+					>
+						Off
+					</button>
+					<button
+						role="tab"
+						aria-selected={incomeOn}
+						onClick={() => toggleIncome(true)}
+					>
+						On
+					</button>
+				</div>
+				<p className="hint" style={{ marginTop: 12 }}>
+					Adds an Income tab to record money coming in, tracked separately from
+					your expenses.
 				</p>
 			</section>
 

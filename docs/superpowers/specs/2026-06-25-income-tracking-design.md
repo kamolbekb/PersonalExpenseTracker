@@ -45,14 +45,14 @@ Mirror the existing expense slice. Files follow the established structure (`Expe
 **Endpoints** (`…Api/Endpoints/`):
 - `IncomeEndpoints` under `/api/incomes`: `GET` (query `from?`, `to?`, `categoryId?`; ordered by `ReceivedOn` desc, `Id` desc), `POST`, `PUT/{id}`, `DELETE/{id}` — same validation/ownership rules as `ExpenseEndpoints` (Amount > 0, CurrencyCode not empty, `IncomeCategoryId` owned by user).
 - `IncomeCategoryEndpoints`: `GET /api/income-categories` → `List<IncomeCategoryDto>` for the current user. If the user has no income categories yet (existing users created before this feature), seed the defaults on read so the list is never empty.
-- `IncomeReportEndpoints`: `GET /api/reports/income-summary?from=&to=` → the **same** `ReportSummary` shape `{ BaseCurrency, GrandTotal, ByCategory[], ByMonth[] }`. Reuse the conversion (`IExchangeRateService` + `CurrencyConverter`) and aggregation logic from `ReportService` — factor the shared aggregation so both expense and income summaries use it, or a parallel `IncomeReportService` mirroring `ReportService`. `ByCategory` groups by income category.
+- `IncomeReportEndpoints`: `GET /api/reports/income-summary?from=&to=` → the **same** `ReportSummary` shape `{ BaseCurrency, GrandTotal, ByCategory[], ByMonth[] }`. Implemented as a **parallel `IncomeReportService`** that mirrors `ReportService` but reads `Incomes`/`IncomeCategories` (lower risk than refactoring the existing expense report path). It reuses the same conversion dependencies (`IExchangeRateService` + `CurrencyConverter`). `ByCategory` groups by income category, `ByMonth` by `ReceivedOn`'s `yyyy-MM`.
 
 **Settings endpoint** (`SettingEndpoints` / `SettingDto`): extend `SettingDto` to `record SettingDto(string BaseCurrency, bool IncomeTrackingEnabled)`. `GET` returns the flag; `PUT` accepts and persists it (alongside base currency).
 
 ### Frontend (React 19 + TS + Vite + TanStack Query + Recharts)
 
 **Types** ([web/src/api/types.ts](../../../web/src/api/types.ts)):
-- `Income { id; amount; currencyCode; categoryId: number /* incomeCategoryId, named categoryId in the client for the shared component */; receivedOn: string; note: string | null }` — to keep the shared component generic, the client normalizes the row to a common shape (see below).
+- `Income { id; amount; currencyCode; incomeCategoryId: number; receivedOn: string; note: string | null }` — matches the backend `IncomeDto` exactly. The `Income.tsx` parent normalizes each row to the shared component's common `{ …, categoryId, date }` shape (mapping `incomeCategoryId → categoryId`, `receivedOn → date`), exactly as `Spending.tsx` maps `spentOn → date`.
 - `IncomeInput { amount; currencyCode; incomeCategoryId; receivedOn; note }`.
 - `IncomeCategory { id; name; emoji }`.
 - Extend `Settings` to `{ baseCurrency: string; incomeTrackingEnabled: boolean }`.

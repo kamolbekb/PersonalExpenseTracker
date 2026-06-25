@@ -6,6 +6,9 @@ import type {
 	Category,
 	Expense,
 	ExpenseInput,
+	Income,
+	IncomeInput,
+	IncomeCategory,
 	ReportSummary,
 	Settings,
 	RatesView,
@@ -94,6 +97,7 @@ export const useUpdateSettings = () => {
 		onSuccess: () => {
 			qc.invalidateQueries({ queryKey: ["settings"] });
 			qc.invalidateQueries({ queryKey: ["report"] });
+			qc.invalidateQueries({ queryKey: ["income-report"] });
 		},
 	});
 };
@@ -109,6 +113,61 @@ export const useDeleteExpense = () => {
 		},
 	});
 };
+
+export const useIncomeCategories = () =>
+	useQuery({
+		queryKey: ["income-categories"],
+		queryFn: () => api<IncomeCategory[]>("/income-categories"),
+	});
+
+export const useIncomes = (
+	filters: { from?: string; to?: string; categoryId?: number } = {},
+) => {
+	const qs = new URLSearchParams();
+	if (filters.from) qs.set("from", filters.from);
+	if (filters.to) qs.set("to", filters.to);
+	if (filters.categoryId) qs.set("categoryId", String(filters.categoryId));
+	return useQuery({
+		queryKey: ["incomes", filters],
+		queryFn: () => api<Income[]>(`/incomes?${qs.toString()}`),
+	});
+};
+
+export const useCreateIncome = () => {
+	const qc = useQueryClient();
+	return useMutation({
+		mutationFn: (input: IncomeInput) =>
+			api<Income>("/incomes", {
+				method: "POST",
+				body: JSON.stringify(input),
+			}),
+		onSuccess: () => {
+			qc.invalidateQueries({ queryKey: ["incomes"] });
+			qc.invalidateQueries({ queryKey: ["income-report"] });
+		},
+	});
+};
+
+export const useDeleteIncome = () => {
+	const qc = useQueryClient();
+	return useMutation({
+		mutationFn: (id: number) =>
+			api<void>(`/incomes/${id}`, { method: "DELETE" }),
+		onSuccess: () => {
+			qc.invalidateQueries({ queryKey: ["incomes"] });
+			qc.invalidateQueries({ queryKey: ["income-report"] });
+		},
+	});
+};
+
+export const useIncomeReport = (range: { from: string; to: string }) =>
+	useQuery({
+		queryKey: ["income-report", range],
+		queryFn: () =>
+			api<ReportSummary>(
+				`/reports/income-summary?from=${range.from}&to=${range.to}`,
+			),
+	});
 
 export const useRates = (date: string, currencies = "USD,RUB,KZT") =>
 	useQuery({

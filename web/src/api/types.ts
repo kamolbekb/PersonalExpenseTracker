@@ -22,6 +22,29 @@ export interface ExpenseInput {
 	note: string | null;
 }
 
+export interface Income {
+	id: number;
+	amount: number;
+	currencyCode: string;
+	incomeCategoryId: number;
+	receivedOn: string;
+	note: string | null;
+}
+
+export interface IncomeInput {
+	amount: number;
+	currencyCode: string;
+	incomeCategoryId: number;
+	receivedOn: string;
+	note: string | null;
+}
+
+export interface IncomeCategory {
+	id: number;
+	name: string;
+	emoji: string;
+}
+
 export interface Budget {
 	id: number;
 	categoryId: number | null;
@@ -55,6 +78,7 @@ export interface ReportSummary {
 
 export interface Settings {
 	baseCurrency: string;
+	incomeTrackingEnabled: boolean;
 }
 
 export interface RateRow {

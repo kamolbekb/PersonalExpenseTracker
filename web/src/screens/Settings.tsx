@@ -28,7 +28,10 @@ export default function Settings() {
 
 	const save = () =>
 		update.mutate(
-			{ baseCurrency: base },
+			{
+				baseCurrency: base,
+				incomeTrackingEnabled: settings?.incomeTrackingEnabled ?? false,
+			},
 			{
 				onSuccess: () => {
 					setSaved(true);

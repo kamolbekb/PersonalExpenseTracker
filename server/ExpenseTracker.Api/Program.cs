@@ -60,6 +60,7 @@ var api = app.MapGroup("/api").RequireAuthorization();
 api.MapExpenseEndpoints();
 api.MapCategoryEndpoints();
 api.MapIncomeCategoryEndpoints();
+api.MapIncomeEndpoints();
 api.MapBudgetEndpoints();
 api.MapReportEndpoints();
 api.MapSettingEndpoints();

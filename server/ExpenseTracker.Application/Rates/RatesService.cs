@@ -31,8 +31,13 @@ public class RatesService(IApplicationDbContext db, IEnumerable<IRateSource> sou
         currency = currency.ToUpperInvariant();
         if (currency == "UZS") return 1m;
         await EnsureSourceForDateAsync("CBU", date, ct);
-        var row = await db.CurrencyRates.FirstOrDefaultAsync(
-            r => r.Source == "CBU" && r.CurrencyCode == currency && r.AsOfDate == date, ct);
+        // CBU rates stay in effect until the next change, so for dates it does not
+        // publish (weekends/holidays) fall back to the most recent rate on or before
+        // the requested date rather than reporting nothing for that date.
+        var row = await db.CurrencyRates
+            .Where(r => r.Source == "CBU" && r.CurrencyCode == currency && r.AsOfDate <= date)
+            .OrderByDescending(r => r.AsOfDate)
+            .FirstOrDefaultAsync(ct);
         return row?.Rate;
     }
 

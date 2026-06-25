@@ -24,10 +24,20 @@ public class BudgetsAndSettingsApiTests(ApiFactory factory) : IClassFixture<ApiF
         var client = ClientFor(12001);
         var initial = await client.GetFromJsonAsync<SettingDto>("/api/settings");
         initial!.BaseCurrency.Should().Be("UZS");
+        initial.IncomeTrackingEnabled.Should().BeFalse();
 
-        await client.PutAsJsonAsync("/api/settings", new SettingDto("EUR"));
+        await client.PutAsJsonAsync("/api/settings", new SettingDto("EUR", false));
         var updated = await client.GetFromJsonAsync<SettingDto>("/api/settings");
         updated!.BaseCurrency.Should().Be("EUR");
+    }
+
+    [Fact]
+    public async Task Income_tracking_flag_round_trips()
+    {
+        var client = ClientFor(12050);
+        await client.PutAsJsonAsync("/api/settings", new SettingDto("UZS", true));
+        var updated = await client.GetFromJsonAsync<SettingDto>("/api/settings");
+        updated!.IncomeTrackingEnabled.Should().BeTrue();
     }
 
     [Fact]

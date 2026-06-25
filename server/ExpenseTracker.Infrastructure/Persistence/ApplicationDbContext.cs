@@ -13,6 +13,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<CurrencyRate> CurrencyRates => Set<CurrencyRate>();
     public DbSet<GoldPrice> GoldPrices => Set<GoldPrice>();
     public DbSet<Setting> Settings => Set<Setting>();
+    public DbSet<Income> Incomes => Set<Income>();
+    public DbSet<IncomeCategory> IncomeCategories => Set<IncomeCategory>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -20,6 +22,9 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         b.Entity<Setting>().HasIndex(s => s.UserId).IsUnique();
         b.Entity<Expense>().HasIndex(e => new { e.UserId, e.SpentOn });
         b.Entity<Category>().HasIndex(c => c.UserId);
+        b.Entity<Income>().HasIndex(i => new { i.UserId, i.ReceivedOn });
+        b.Entity<IncomeCategory>().HasIndex(c => c.UserId);
+        b.Entity<Income>().Property(i => i.Amount).HasColumnType("decimal(18,2)");
         b.Entity<Budget>().HasIndex(bg => bg.UserId);
 
         b.Entity<Expense>().Property(e => e.Amount).HasColumnType("decimal(18,2)");

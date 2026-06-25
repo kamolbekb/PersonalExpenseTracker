@@ -12,5 +12,7 @@ public interface IApplicationDbContext
     DbSet<CurrencyRate> CurrencyRates { get; }
     DbSet<GoldPrice> GoldPrices { get; }
     DbSet<Setting> Settings { get; }
+    DbSet<Income> Incomes { get; }
+    DbSet<IncomeCategory> IncomeCategories { get; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

@@ -63,6 +63,7 @@ api.MapIncomeCategoryEndpoints();
 api.MapIncomeEndpoints();
 api.MapBudgetEndpoints();
 api.MapReportEndpoints();
+api.MapIncomeReportEndpoints();
 api.MapSettingEndpoints();
 api.MapRatesEndpoints();
 api.MapGoldEndpoints();

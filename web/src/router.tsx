@@ -24,6 +24,22 @@ import {
 	IconRates,
 	IconSettings,
 } from "./components/icons";
+import { type ComponentType, type ReactNode } from "react";
+
+type Tab = {
+	to: string;
+	label: string;
+	Icon: ComponentType<{ className?: string }>;
+	end?: boolean;
+};
+
+// Redirect away from income routes when income tracking is disabled.
+function RequireIncome({ children }: { children: ReactNode }) {
+	const { data: settings } = useSettings();
+	if (settings && !settings.incomeTrackingEnabled)
+		return <Navigate to="/spending" replace />;
+	return <>{children}</>;
+}
 
 const TITLES: Record<string, string> = {
 	"/": "Add expense",
@@ -42,14 +58,14 @@ function Layout() {
 	const { data: settings } = useSettings();
 	const title = TITLES[pathname] ?? "Spending";
 
-	const tabs = [
+	const tabs: Tab[] = [
 		{ to: "/", label: "Add", Icon: IconAdd, end: true },
-		{ to: "/spending", label: "Spending", Icon: IconReports, end: false },
+		{ to: "/spending", label: "Spending", Icon: IconReports },
 		...(settings?.incomeTrackingEnabled
-			? [{ to: "/income", label: "Income", Icon: IconIncome, end: false }]
+			? [{ to: "/income", label: "Income", Icon: IconIncome }]
 			: []),
-		{ to: "/budgets", label: "Budgets", Icon: IconBudgets, end: false },
-		{ to: "/rates", label: "Rates", Icon: IconRates, end: false },
+		{ to: "/budgets", label: "Budgets", Icon: IconBudgets },
+		{ to: "/rates", label: "Rates", Icon: IconRates },
 	];
 
 	return (
@@ -90,8 +106,22 @@ const router = createBrowserRouter([
 		children: [
 			{ index: true, element: <AddExpense /> },
 			{ path: "spending", element: <Spending /> },
-			{ path: "income", element: <Income /> },
-			{ path: "income/add", element: <AddIncome /> },
+			{
+				path: "income",
+				element: (
+					<RequireIncome>
+						<Income />
+					</RequireIncome>
+				),
+			},
+			{
+				path: "income/add",
+				element: (
+					<RequireIncome>
+						<AddIncome />
+					</RequireIncome>
+				),
+			},
 			{ path: "expenses", element: <Navigate to="/spending" replace /> },
 			{ path: "reports", element: <Navigate to="/spending" replace /> },
 			{ path: "categories", element: <Categories /> },

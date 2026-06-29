@@ -27,6 +27,13 @@ function formatAmount(raw: string): string {
 }
 const toNumber = (s: string) => parseFloat(s.replace(/,/g, ""));
 
+// Shrink the amount input's font as the formatted value grows, so large
+// totals (1,000,000+) stay inside the field instead of clipping.
+function amountFontSize(value: string): number {
+	const len = value.length;
+	return len <= 9 ? 54 : Math.max(28, 54 - (len - 9) * 4);
+}
+
 export default function AddIncome() {
 	const { data: categories } = useIncomeCategories();
 	const { data: settings } = useSettings();
@@ -101,6 +108,7 @@ export default function AddIncome() {
 						value={amount}
 						onChange={(e) => setAmount(formatAmount(e.target.value))}
 						autoFocus
+						style={{ fontSize: amountFontSize(amount || "0.00") }}
 					/>
 					<select
 						className="cur-select"

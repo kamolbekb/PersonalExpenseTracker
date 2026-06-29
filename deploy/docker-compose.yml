@@ -1,58 +1,33 @@
-# Personal Expense Tracker — self-hosted stack (home server / any single Linux box)
-# Mirrors the UPro setup: API + its own Postgres on one host, exposed worldwide via
-# a Cloudflare Tunnel (outbound-only — no port-forwarding, no static IP).
+# Personal Expense Tracker — app on one Linux box (home server or a VM like Hetzner),
+# database hosted on Supabase Postgres. Exposed worldwide via a Cloudflare Tunnel
+# (outbound-only — no port-forwarding, no static IP).
 #
 #   cd <repo-root>
 #   docker compose -f deploy/docker-compose.yml --env-file deploy/.env up -d --build
 #
-# Only `cloudflared` talks to the internet. Postgres is never published to the LAN.
-# This is an INDEPENDENT stack from UPro: its own tunnel, its own hostname
-# (expense.shermatov.uz), its own database. Both can run on the same box at once.
+# Only `cloudflared` talks inbound from the internet. The database lives on Supabase,
+# reached over TLS — there is no local Postgres container to run or back up.
+#
+# Secrets and the Supabase connection string come from deploy/.env (git-ignored).
+# They're passed to the container via `env_file` so values containing ';' '=' or '$'
+# (common in connection strings) are taken literally, not interpolated by Compose.
 
 name: expense
 
 services:
-  expense-postgres:
-    image: postgres:16-alpine
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    # Bound to localhost only, on 5433 so it never clashes with UPro's Postgres
-    # (which already binds 127.0.0.1:5432). Open a DB GUI via SSH tunnel, or comment
-    # this out entirely if you don't need direct DB access.
-    ports:
-      - "127.0.0.1:5433:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-
   expense-api:
     build:
       context: ..
       dockerfile: Dockerfile
     restart: unless-stopped
-    depends_on:
-      expense-postgres:
-        condition: service_healthy
+    # Reads ConnectionStrings__Default, BotToken and Rates__RefreshToken from deploy/.env.
+    # Variable names there match the container env vars exactly (no remapping needed).
+    env_file:
+      - .env
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       # The image already sets this; repeated here so the listening port is obvious.
       ASPNETCORE_URLS: http://+:8080
-      # App reads ConnectionStrings:Default (Npgsql). Host = the Postgres service name.
-      ConnectionStrings__Default: "Server=expense-postgres;Port=5432;Database=${POSTGRES_DB};User Id=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
-      # Telegram bot token from BotFather — MUST be the bot that launches the Mini App,
-      # because initData HMAC validation is keyed on it. See deploy/README.md.
-      BotToken: ${BOT_TOKEN}
-      # Optional: only needed if you want to trigger the rate/gold fetch over HTTP.
-      # On an always-on box the in-process 09:00 Asia/Tashkent scheduler already runs,
-      # so you can leave this blank (the /internal/refresh endpoint then returns 401).
-      Rates__RefreshToken: ${RATES_REFRESH_TOKEN:-}
 
   cloudflared:
     image: cloudflare/cloudflared:latest
@@ -62,6 +37,3 @@ services:
       TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN}
     depends_on:
       - expense-api
-
-volumes:
-  pgdata:

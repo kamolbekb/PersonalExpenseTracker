@@ -1,17 +1,17 @@
-# Deploying the Expense Tracker on a home server (Cloudflare Tunnel)
+# Deploying the Expense Tracker on a Linux box (Cloudflare Tunnel)
 
-Same model as UPro: the app + its own Postgres run on your box, and a Cloudflare
-Tunnel exposes it on a public HTTPS URL — outbound-only, so **no port-forwarding,
-no static IP**.
+Works the same on a home server or a cloud VM (e.g. Hetzner): the app runs on your
+box, the **database is hosted on Supabase**, and a Cloudflare Tunnel exposes the app
+on a public HTTPS URL — outbound-only, so **no port-forwarding, no static IP**.
 
 ```
 Internet ─https─▶ Cloudflare edge ─tunnel─▶ cloudflared ─http─▶ expense-api:8080
 ```
 
 This is an **independent stack** from UPro: its own tunnel, its own hostname
-(`expense.shermatov.uz`), its own database. Both run on the same box at once —
-they listen on `:8080` *inside their own containers*, which never clash because
-`cloudflared` reaches each by service name.
+(`expense.shermatov.uz`), its own database (Supabase). Multiple apps run on the
+same box at once — they listen on `:8080` *inside their own containers*, which
+never clash because `cloudflared` reaches each by service name.
 
 > **Why a second tunnel and not just a second hostname on the UPro tunnel?**
 > Either works — one tunnel can serve many hostnames. A second, self-contained
@@ -36,7 +36,7 @@ bot that opens the Mini App.
 5. BotFather replies with a line like:
    `Use this token to access the HTTP API:` followed by
    `123456789:AAH...` — **that is your token.** Copy it.
-6. Paste it into `deploy/.env` as `BOT_TOKEN=`.
+6. Paste it into `deploy/.env` as `BotToken=`.
 
 (Already have a bot? Reuse it: `/mybots → <bot> → API Token`.)
 
@@ -49,10 +49,10 @@ need the deployed URL first.
 cp deploy/.env.example deploy/.env
 nano deploy/.env
 ```
-Fill `POSTGRES_PASSWORD` (any strong random string) and `BOT_TOKEN` (step 1).
-Leave `CLOUDFLARE_TUNNEL_TOKEN` for step 3 and `RATES_REFRESH_TOKEN` blank.
-
-Generate a password quickly:  `openssl rand -base64 24`
+Fill `ConnectionStrings__Default` (your Supabase connection string — dashboard →
+**Connect → Session pooler**, port `5432`, converted to Npgsql `key=value` form;
+see the example file) and `BotToken` (step 1). Leave `CLOUDFLARE_TUNNEL_TOKEN` for
+step 3 and `Rates__RefreshToken` blank.
 
 ## 3. Create the Cloudflare Tunnel
 
@@ -109,7 +109,7 @@ The app fetches CBU exchange rates + gold prices daily at **09:00 Asia/Tashkent*
 via an in-process background service, plus a catch-up on every startup. Because
 your home server is always-on (unlike serverless), this just works — you do **not**
 need Cloudflare/Cloud Scheduler or the `/internal/refresh` endpoint. Leave
-`RATES_REFRESH_TOKEN` blank.
+`Rates__RefreshToken` blank.
 
 ## Day-2 operations
 
@@ -117,13 +117,18 @@ need Cloudflare/Cloud Scheduler or the `/internal/refresh` endpoint. Leave
 # update to latest code
 git pull && docker compose -f deploy/docker-compose.yml --env-file deploy/.env up -d --build
 
-# database backup (cron this)
-docker compose -f deploy/docker-compose.yml exec -T expense-postgres \
-  pg_dump -U expense expense | gzip > ~/backups/expense-$(date +%F).sql.gz
-
 # logs / restart
 docker compose -f deploy/docker-compose.yml logs -f
 docker compose -f deploy/docker-compose.yml restart expense-api
+```
+
+Database backups are handled by **Supabase** (automatic daily backups on the
+dashboard). For an extra off-site copy you can still `pg_dump` against Supabase:
+
+```bash
+docker run --rm -e PGPASSWORD='<supabase-db-password>' postgres:16-alpine \
+  pg_dump -h <session-pooler-host> -p 5432 -U postgres.<project-ref> -d postgres \
+  -Fc --no-owner --no-acl | cat > ~/backups/expense-$(date +%F).dump
 ```
 
 `restart: unless-stopped` + `systemctl enable docker` bring the stack back after a

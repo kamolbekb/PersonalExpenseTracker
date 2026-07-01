@@ -75,4 +75,32 @@ public class IncomesApiTests(ApiFactory factory) : IClassFixture<ApiFactory>
         var res = await ClientFor(31302).DeleteAsync($"/api/incomes/{created!.Id}");
         res.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
+
+    [Fact]
+    public async Task Get_by_id_returns_the_income()
+    {
+        var client = ClientFor(31401);
+        var catId = await FirstIncomeCategoryId(client);
+        var created = await (await client.PostAsJsonAsync("/api/incomes",
+            new IncomeInput(250m, "USD", catId, new DateOnly(2026, 6, 3), "bonus")))
+            .Content.ReadFromJsonAsync<IncomeDto>();
+
+        var fetched = await client.GetFromJsonAsync<IncomeDto>($"/api/incomes/{created!.Id}");
+        fetched!.Id.Should().Be(created.Id);
+        fetched.Amount.Should().Be(250m);
+        fetched.Note.Should().Be("bonus");
+    }
+
+    [Fact]
+    public async Task User_cannot_get_another_users_income()
+    {
+        var alice = ClientFor(31501);
+        var aliceCat = await FirstIncomeCategoryId(alice);
+        var created = await (await alice.PostAsJsonAsync("/api/incomes",
+            new IncomeInput(5m, "USD", aliceCat, new DateOnly(2026, 6, 1), "x")))
+            .Content.ReadFromJsonAsync<IncomeDto>();
+
+        var res = await ClientFor(31502).GetAsync($"/api/incomes/{created!.Id}");
+        res.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
 }

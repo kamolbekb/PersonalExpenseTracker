@@ -16,6 +16,12 @@ public static class IncomeEndpoints
             return Results.Ok(await svc.ListAsync(user.Id, from, to, categoryId));
         });
 
+        g.MapGet("/{id:int}", async (ICurrentUser cu, IncomeService svc, int id) =>
+        {
+            var user = await cu.GetOrCreateAsync();
+            return EndpointResults.ToHttp(await svc.GetAsync(user.Id, id));
+        });
+
         g.MapPost("", async (ICurrentUser cu, IncomeService svc, IncomeInput input) =>
         {
             var user = await cu.GetOrCreateAsync();

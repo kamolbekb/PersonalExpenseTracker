@@ -18,6 +18,14 @@ public class ExpenseService(IApplicationDbContext db)
             .ToListAsync();
     }
 
+    public async Task<OperationResult<ExpenseDto>> GetAsync(int userId, int id)
+    {
+        var e = await db.Expenses.FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId);
+        if (e is null) return OperationResult<ExpenseDto>.NotFound();
+        return OperationResult<ExpenseDto>.Ok(
+            new ExpenseDto(e.Id, e.Amount, e.CurrencyCode, e.CategoryId, e.SpentOn, e.Note));
+    }
+
     public async Task<OperationResult<ExpenseDto>> CreateAsync(int userId, ExpenseInput input)
     {
         if (input.Amount <= 0) return OperationResult<ExpenseDto>.Bad("Amount must be positive.");

@@ -13,6 +13,8 @@ import Budgets from "./screens/Budgets";
 import Spending from "./screens/Spending";
 import Income from "./screens/Income";
 import AddIncome from "./screens/AddIncome";
+import EditExpense from "./screens/EditExpense";
+import EditIncome from "./screens/EditIncome";
 import Settings from "./screens/Settings";
 import Rates from "./screens/Rates";
 import { useSettings } from "./api/hooks";
@@ -56,7 +58,13 @@ function Layout() {
 	const { pathname } = useLocation();
 	const navigate = useNavigate();
 	const { data: settings } = useSettings();
-	const title = TITLES[pathname] ?? "Spending";
+	const title =
+		TITLES[pathname] ??
+		(/^\/expenses\/\d+\/edit$/.test(pathname)
+			? "Edit expense"
+			: /^\/incomes\/\d+\/edit$/.test(pathname)
+				? "Edit income"
+				: "Spending");
 
 	const tabs: Tab[] = [
 		{ to: "/", label: "Add", Icon: IconAdd, end: true },
@@ -119,6 +127,15 @@ const router = createBrowserRouter([
 				element: (
 					<RequireIncome>
 						<AddIncome />
+					</RequireIncome>
+				),
+			},
+			{ path: "expenses/:id/edit", element: <EditExpense /> },
+			{
+				path: "incomes/:id/edit",
+				element: (
+					<RequireIncome>
+						<EditIncome />
 					</RequireIncome>
 				),
 			},

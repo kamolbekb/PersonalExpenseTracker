@@ -9,7 +9,7 @@ import {
 	Tooltip,
 	XAxis,
 } from "recharts";
-import { IconTrash } from "./icons";
+import { IconPencil, IconTrash } from "./icons";
 import type { ReportSummary } from "../api/types";
 
 // iOS system colors.
@@ -62,6 +62,7 @@ interface PeriodLedgerProps {
 	rows?: LedgerRow[];
 	categories?: LedgerCategory[];
 	onDelete: (id: number) => void;
+	onEdit?: (id: number) => void;
 	headerAction?: ReactNode;
 	emptyVerb?: string;
 	emptyCategoryText?: string;
@@ -76,6 +77,7 @@ export default function PeriodLedger({
 	rows,
 	categories,
 	onDelete,
+	onEdit,
 	headerAction,
 	emptyVerb = "spent",
 	emptyCategoryText = "No expenses in this category.",
@@ -331,6 +333,15 @@ export default function PeriodLedger({
 														{fmtAmount(r.amount)}
 														<span className="item__cur">{r.currencyCode}</span>
 													</div>
+													{onEdit && (
+														<button
+															className="icon-btn"
+															aria-label="Edit"
+															onClick={() => onEdit(r.id)}
+														>
+															<IconPencil />
+														</button>
+													)}
 													<button
 														className="icon-btn"
 														aria-label="Delete"

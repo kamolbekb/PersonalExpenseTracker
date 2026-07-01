@@ -33,6 +33,25 @@ export const useCreateCategory = () => {
 	});
 };
 
+export const useUpdateCategory = () => {
+	const qc = useQueryClient();
+	return useMutation({
+		mutationFn: ({
+			id,
+			...input
+		}: {
+			id: number;
+			name: string;
+			emoji: string;
+		}) =>
+			api<Category>(`/categories/${id}`, {
+				method: "PUT",
+				body: JSON.stringify(input),
+			}),
+		onSuccess: () => qc.invalidateQueries({ queryKey: ["categories"] }),
+	});
+};
+
 export const useExpenses = (
 	filters: { from?: string; to?: string; categoryId?: number } = {},
 ) => {
@@ -46,6 +65,12 @@ export const useExpenses = (
 	});
 };
 
+export const useExpense = (id: number) =>
+	useQuery({
+		queryKey: ["expense", id],
+		queryFn: () => api<Expense>(`/expenses/${id}`),
+	});
+
 export const useCreateExpense = () => {
 	const qc = useQueryClient();
 	return useMutation({
@@ -56,6 +81,22 @@ export const useCreateExpense = () => {
 			}),
 		onSuccess: () => {
 			qc.invalidateQueries({ queryKey: ["expenses"] });
+			qc.invalidateQueries({ queryKey: ["report"] });
+		},
+	});
+};
+
+export const useUpdateExpense = () => {
+	const qc = useQueryClient();
+	return useMutation({
+		mutationFn: ({ id, ...input }: ExpenseInput & { id: number }) =>
+			api<Expense>(`/expenses/${id}`, {
+				method: "PUT",
+				body: JSON.stringify(input),
+			}),
+		onSuccess: (_data, { id }) => {
+			qc.invalidateQueries({ queryKey: ["expenses"] });
+			qc.invalidateQueries({ queryKey: ["expense", id] });
 			qc.invalidateQueries({ queryKey: ["report"] });
 		},
 	});
@@ -133,6 +174,12 @@ export const useIncomes = (
 	});
 };
 
+export const useIncome = (id: number) =>
+	useQuery({
+		queryKey: ["income", id],
+		queryFn: () => api<Income>(`/incomes/${id}`),
+	});
+
 export const useCreateIncome = () => {
 	const qc = useQueryClient();
 	return useMutation({
@@ -143,6 +190,22 @@ export const useCreateIncome = () => {
 			}),
 		onSuccess: () => {
 			qc.invalidateQueries({ queryKey: ["incomes"] });
+			qc.invalidateQueries({ queryKey: ["income-report"] });
+		},
+	});
+};
+
+export const useUpdateIncome = () => {
+	const qc = useQueryClient();
+	return useMutation({
+		mutationFn: ({ id, ...input }: IncomeInput & { id: number }) =>
+			api<Income>(`/incomes/${id}`, {
+				method: "PUT",
+				body: JSON.stringify(input),
+			}),
+		onSuccess: (_data, { id }) => {
+			qc.invalidateQueries({ queryKey: ["incomes"] });
+			qc.invalidateQueries({ queryKey: ["income", id] });
 			qc.invalidateQueries({ queryKey: ["income-report"] });
 		},
 	});

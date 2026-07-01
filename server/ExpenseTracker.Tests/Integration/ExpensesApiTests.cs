@@ -84,4 +84,33 @@ public class ExpensesApiTests(ApiFactory factory) : IClassFixture<ApiFactory>
             new ExpenseInput(9m, "USD", bobCatId, new DateOnly(2026, 6, 2), "hijack"));
         res.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
+
+    [Fact]
+    public async Task Get_by_id_returns_the_expense()
+    {
+        var client = ClientFor(8401);
+        var catId = await FirstCategoryId(8401);
+        var created = await (await client.PostAsJsonAsync("/api/expenses",
+            new ExpenseInput(7.25m, "USD", catId, new DateOnly(2026, 6, 3), "coffee")))
+            .Content.ReadFromJsonAsync<ExpenseDto>();
+
+        var fetched = await client.GetFromJsonAsync<ExpenseDto>($"/api/expenses/{created!.Id}");
+        fetched!.Id.Should().Be(created.Id);
+        fetched.Amount.Should().Be(7.25m);
+        fetched.Note.Should().Be("coffee");
+    }
+
+    [Fact]
+    public async Task User_cannot_get_another_users_expense()
+    {
+        var alice = ClientFor(8501);
+        var catId = await FirstCategoryId(8501);
+        var created = await (await alice.PostAsJsonAsync("/api/expenses",
+            new ExpenseInput(5m, "USD", catId, new DateOnly(2026, 6, 1), "x")))
+            .Content.ReadFromJsonAsync<ExpenseDto>();
+
+        var bob = ClientFor(8502);
+        var res = await bob.GetAsync($"/api/expenses/{created!.Id}");
+        res.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
 }

@@ -18,6 +18,12 @@ public static class ExpenseEndpoints
             return Results.Ok(items);
         });
 
+        g.MapGet("/{id:int}", async (ICurrentUser cu, ExpenseService svc, int id) =>
+        {
+            var user = await cu.GetOrCreateAsync();
+            return EndpointResults.ToHttp(await svc.GetAsync(user.Id, id));
+        });
+
         g.MapPost("", async (ICurrentUser cu, ExpenseService svc, ExpenseInput input) =>
         {
             var user = await cu.GetOrCreateAsync();

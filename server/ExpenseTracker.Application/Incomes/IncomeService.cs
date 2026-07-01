@@ -18,6 +18,14 @@ public class IncomeService(IApplicationDbContext db)
             .ToListAsync();
     }
 
+    public async Task<OperationResult<IncomeDto>> GetAsync(int userId, int id)
+    {
+        var i = await db.Incomes.FirstOrDefaultAsync(x => x.Id == id && x.UserId == userId);
+        if (i is null) return OperationResult<IncomeDto>.NotFound();
+        return OperationResult<IncomeDto>.Ok(
+            new IncomeDto(i.Id, i.Amount, i.CurrencyCode, i.IncomeCategoryId, i.ReceivedOn, i.Note));
+    }
+
     public async Task<OperationResult<IncomeDto>> CreateAsync(int userId, IncomeInput input)
     {
         if (input.Amount <= 0) return OperationResult<IncomeDto>.Bad("Amount must be positive.");

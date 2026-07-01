@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
 	useCategories,
 	useDeleteExpense,
@@ -15,6 +16,7 @@ const monthStart = () => {
 };
 
 export default function Spending() {
+	const navigate = useNavigate();
 	const [from, setFrom] = useState(monthStart);
 	const [to, setTo] = useState(() => localDateString(new Date()));
 
@@ -43,6 +45,7 @@ export default function Spending() {
 			rows={rows}
 			categories={categories}
 			onDelete={(id) => del.mutate(id)}
+			onEdit={(id) => navigate(`/expenses/${id}/edit`)}
 		/>
 	);
 }

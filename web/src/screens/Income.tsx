@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
 	useDeleteIncome,
 	useIncomeCategories,
@@ -15,6 +15,7 @@ const monthStart = () => {
 };
 
 export default function Income() {
+	const navigate = useNavigate();
 	const [from, setFrom] = useState(monthStart);
 	const [to, setTo] = useState(() => localDateString(new Date()));
 
@@ -43,6 +44,7 @@ export default function Income() {
 			rows={rows}
 			categories={categories}
 			onDelete={(id) => del.mutate(id)}
+			onEdit={(id) => navigate(`/incomes/${id}/edit`)}
 			emptyVerb="earned"
 			emptyCategoryText="No income in this category."
 			headerAction={
